@@ -2,7 +2,15 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { headers } from 'next/headers';
-import { kv } from '@vercel/kv';
+import Redis from 'ioredis';
+
+// Initialize Redis client
+const redis = new Redis(process.env.REDIS_URL);
+
+// Handle Redis connection errors
+redis.on('error', (error) => {
+  console.error('Redis connection error:', error);
+});
 
 const getIP = async () => {
   const headersList = headers();
@@ -25,40 +33,46 @@ const storeContact = async (contact) => {
     createdAt: new Date().toISOString()
   };
   
-  // Store the contact in a Redis hash
-  await kv.hset(`contact:${id}`, newContact);
-  
-  // Add to a sorted set for time-based queries
-  await kv.zadd('contacts-by-time', {
-    score: Date.now(),
-    member: id
-  });
-  
-  return newContact;
+  try {
+    // Store the contact as a hash
+    await redis.hset(`contact:${id}`, {
+      ...newContact,
+      ipAddress: contact.ipAddress // Ensure ipAddress is included
+    });
+    
+    // Add to sorted set for time-based queries
+    await redis.zadd('contacts-by-time', Date.now(), id);
+    
+    return newContact;
+  } catch (error) {
+    console.error('Redis store error:', error);
+    throw error;
+  }
 };
 
 const checkRateLimit = async (email, ipAddress) => {
-  const now = Date.now();
-  const fiveMinutesAgo = now - 5 * 60 * 1000;
-  
-  // Get recent submissions from the sorted set
-  const recentIds = await kv.zrangebyscore(
-    'contacts-by-time',
-    fiveMinutesAgo,
-    '+inf'
-  );
-  
-  // Get all recent contacts
-  const recentContacts = await Promise.all(
-    recentIds.map(id => kv.hgetall(`contact:${id}`))
-  );
-  
-  // Count submissions from this email or IP
-  const recentSubmissions = recentContacts.filter(
-    contact => contact.email === email || contact.ipAddress === ipAddress
-  );
-  
-  return recentSubmissions.length < 2;
+  try {
+    const now = Date.now();
+    const fiveMinutesAgo = now - 5 * 60 * 1000;
+    
+    // Get recent submission IDs
+    const recentIds = await redis.zrangebyscore('contacts-by-time', fiveMinutesAgo, '+inf');
+    
+    // Get contact details for recent submissions
+    const recentContacts = await Promise.all(
+      recentIds.map(id => redis.hgetall(`contact:${id}`))
+    );
+    
+    // Filter submissions by email or IP
+    const recentSubmissions = recentContacts.filter(
+      contact => contact.email === email || contact.ipAddress === ipAddress
+    );
+    
+    return recentSubmissions.length < 2;
+  } catch (error) {
+    console.error('Redis rate limit check error:', error);
+    throw error;
+  }
 };
 
 export async function POST(req) {
@@ -104,7 +118,7 @@ export async function POST(req) {
       }
     });
 
-    // Send emails...
+    // Email templates
     const [userMailOptions, adminMailOptions] = [
       {
         from: 'shubhamshindesunil.work@gmail.com',
@@ -136,6 +150,7 @@ export async function POST(req) {
       }
     ];
 
+    // Send emails
     await Promise.all([
       transporter.sendMail(userMailOptions),
       transporter.sendMail(adminMailOptions)
