@@ -236,7 +236,7 @@ const handleFileClick = (file) => {
     if (!activeContent) return null;
   
     return (
-      <pre className="font-mono text-sm">
+      <pre className="font-mono text-xs md:text-sm">
         <code className="block p-4">
           {activeContent.split('\n').map((line, index) => (
             <div key={index} className="group flex">
