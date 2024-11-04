@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.21.1",
+    "@vercel/kv": "^1.0.1",
     "isomorphic-dompurify": "^2.16.0",
     "lucide-react": "^0.454.0",
     "next": "15.0.2",
