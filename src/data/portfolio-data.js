@@ -1,5 +1,14 @@
 export const projectsData = {
   "projects": [
+      {
+      "name": "IDE-Themed Portfolio",
+      "description": "Software Developer portfolio thats IDE themed",
+      "technologies": ["Nextjs", "Vercel", "React"],
+      "github": "https://github.com/shubhamshnd/portfolio",
+      "demo": "https://shubhamshnd.vercel.app",
+      "preview": "IDE Themed Portfolio page",
+      "type": "open-source"
+    },
     {
       "name": "Vehicle Speed Detection Dashboard",
       "description": "ANPR Based Vehicle Speed Detection system for monitoring and analyzing vehicle speeds.",
