@@ -44,19 +44,16 @@ const Portfolio = () => {
     loadPdf();
   }, []);
 const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  useEffect(() => {
-  const handleResize = () => {
-    if (window.innerWidth < 768) {
-      setIsSidebarOpen(false);
-    } else {
-      setIsSidebarOpen(true);
-    }
+const [isMobile, setIsMobile] = useState(false);
+useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+    setIsSidebarOpen(window.innerWidth >= 768);
   };
 
-  window.addEventListener('resize', handleResize);
-  handleResize(); // Initial check
-  return () => window.removeEventListener('resize', handleResize);
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  return () => window.removeEventListener('resize', checkMobile);
 }, []);
   
 const StatusMessage = ({ type, message }) => {
@@ -533,13 +530,13 @@ return (
     {/* Main Content Area */}
     <div className="flex flex-1 overflow-hidden relative">
       {/* Mobile Overlay */}
-      {isSidebarOpen && window.innerWidth < 768 && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-0"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+{isSidebarOpen && isMobile && (
+  <div 
+    className="fixed inset-0 bg-black bg-opacity-50 z-0"
+    onClick={() => setIsSidebarOpen(false)}
+    aria-hidden="true"
+  />
+)}
       
       {/* Sidebar */}
       <aside 
