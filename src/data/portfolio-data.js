@@ -6,7 +6,7 @@ export const projectsData = {
       "technologies": ["Nextjs", "Vercel", "React"],
       "github": "https://github.com/shubhamshnd/portfolio",
       "demo": "https://shubhamshnd.vercel.app",
-      "preview": "IDE Themed Portfolio page",
+      "preview": "This Very App You're viewing",
       "type": "open-source"
     },
     {
