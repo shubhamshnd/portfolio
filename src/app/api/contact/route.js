@@ -4,12 +4,15 @@ import nodemailer from 'nodemailer';
 import { headers } from 'next/headers';
 import Redis from 'ioredis';
 
-// Initialize Redis client
+// Simple Redis initialization using only the REDIS_URL
 const redis = new Redis(process.env.REDIS_URL);
 
-// Handle Redis connection errors
 redis.on('error', (error) => {
   console.error('Redis connection error:', error);
+});
+
+redis.on('connect', () => {
+  console.log('Successfully connected to Redis');
 });
 
 const getIP = async () => {
@@ -34,13 +37,8 @@ const storeContact = async (contact) => {
   };
   
   try {
-    // Store the contact as a hash
-    await redis.hset(`contact:${id}`, {
-      ...newContact,
-      ipAddress: contact.ipAddress // Ensure ipAddress is included
-    });
-    
-    // Add to sorted set for time-based queries
+    // Store contact data
+    await redis.hset(`contact:${id}`, newContact);
     await redis.zadd('contacts-by-time', Date.now(), id);
     
     return newContact;
@@ -55,15 +53,11 @@ const checkRateLimit = async (email, ipAddress) => {
     const now = Date.now();
     const fiveMinutesAgo = now - 5 * 60 * 1000;
     
-    // Get recent submission IDs
     const recentIds = await redis.zrangebyscore('contacts-by-time', fiveMinutesAgo, '+inf');
-    
-    // Get contact details for recent submissions
     const recentContacts = await Promise.all(
       recentIds.map(id => redis.hgetall(`contact:${id}`))
     );
     
-    // Filter submissions by email or IP
     const recentSubmissions = recentContacts.filter(
       contact => contact.email === email || contact.ipAddress === ipAddress
     );
@@ -118,7 +112,7 @@ export async function POST(req) {
       }
     });
 
-    // Email templates
+    // Send emails
     const [userMailOptions, adminMailOptions] = [
       {
         from: 'shubhamshindesunil.work@gmail.com',
@@ -150,7 +144,6 @@ export async function POST(req) {
       }
     ];
 
-    // Send emails
     await Promise.all([
       transporter.sendMail(userMailOptions),
       transporter.sendMail(adminMailOptions)
