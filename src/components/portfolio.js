@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronDown, File, Folder, Github, Linkedin, Twitter, 
   Mail, Download, ExternalLink, X, Play, FileText, AlertCircle, Menu, 
   CheckCircle2, Loader2 } from 'lucide-react';
-
+import { Analytics } from "@vercel/analytics/react"
 import { projectsData, experienceData, certificationsData, educationData, contactPythonCode } from '@/data/portfolio-data';
 
 const Portfolio = () => {
