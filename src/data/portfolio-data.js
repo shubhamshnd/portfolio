@@ -252,29 +252,20 @@ import re
 
 @dataclass
 class ContactForm:
-    """Data class to handle contact form submissions"""
     name: str = "### ENTER YOUR NAME ###"
     email: str = "### ENTER YOUR EMAIL ###"
     message: str = "### ENTER YOUR MESSAGE ###"
 
 class ContactManager:
     def __init__(self):
-        """Initialize contact manager with security checks"""
         self.MAX_ATTEMPTS = 3
         self.TIMEOUT_MINUTES = 5
         
     def validate_input(self, form: ContactForm) -> Dict[str, Union[bool, str]]:
-        """
-        Validates form input for security and completeness
-        
-        Returns:
-            Dict containing validation status and any error messages
-        """
-        # Input validation
         if not all([form.name, form.email, form.message]):
             return {"valid": False, "message": "All fields are required"}
             
-        # Email format validation
+
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_pattern, form.email):
             return {"valid": False, "message": "Invalid email format"}
@@ -282,12 +273,6 @@ class ContactManager:
         return {"valid": True, "message": "Validation successful"}
 
     def send_email(self, form: ContactForm) -> Dict[str, Union[bool, str]]:
-        """
-        Sends contact form submission via SMTP
-        - Sends confirmation email to sender
-        - Sends notification to admin
-        - Stores submission in database
-        """
         try:
             # Input validation
             validation = self.validate_input(form)
@@ -310,7 +295,6 @@ class ContactManager:
             """
             admin_msg.attach(MIMEText(admin_body, 'plain'))
             
-            # Create confirmation message for sender
             confirm_msg = MIMEMultipart()
             confirm_msg['Subject'] = 'Thank you for contacting Shubham Shinde'
             confirm_msg['From'] = 'shubhamshindesunil.work@gmail.com'
@@ -331,9 +315,7 @@ class ContactManager:
             """
             confirm_msg.attach(MIMEText(confirm_body, 'plain'))
             
-            # Store in database and send emails
-            # (Actual implementation handles this securely)
-            
+
             return {
                 "valid": True,
                 "message": "Message sent successfully! Please check your email for confirmation."
@@ -346,7 +328,6 @@ class ContactManager:
             }
 
 def main():
-    """Main function to handle contact form submission"""
     form = ContactForm()  # This will use the editable values
     manager = ContactManager()
     result = manager.send_email(form)
