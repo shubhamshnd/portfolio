@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 // Add these imports at the top of your file
 import { ChevronRight, ChevronDown, File, Folder, Github, Linkedin, Twitter, 
-  Mail, Download, ExternalLink, X, Play, FileText, AlertCircle, 
+  Mail, Download, ExternalLink, X, Play, FileText, AlertCircle, Menu, 
   CheckCircle2, Loader2 } from 'lucide-react';
 
 import { projectsData, experienceData, certificationsData, educationData, contactPythonCode } from '@/data/portfolio-data';
@@ -43,25 +43,53 @@ const Portfolio = () => {
     };
     loadPdf();
   }, []);
+const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const StatusMessage = ({ type, message }) => {
-    if (!message) return null;
-    
-    const styles = {
-      success: "bg-green-500/10 text-green-500 border-green-500/20",
-      error: "bg-red-500/10 text-red-500 border-red-500/20",
-      loading: "bg-blue-500/10 text-blue-500 border-blue-500/20"
-    };
-  
-    return (
-      <div className={`flex items-center gap-2 p-2 my-2 border rounded ${styles[type]}`}>
-        {type === 'success' && <CheckCircle2 size={16} />}
-        {type === 'error' && <AlertCircle size={16} />}
-        {type === 'loading' && <Loader2 size={16} className="animate-spin" />}
-        <span>{message}</span>
-      </div>
-    );
+  useEffect(() => {
+  const handleResize = () => {
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    } else {
+      setIsSidebarOpen(true);
+    }
   };
+
+  window.addEventListener('resize', handleResize);
+  handleResize(); // Initial check
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
+  
+const StatusMessage = ({ type, message }) => {
+  if (!message) return null;
+  
+  const styles = {
+    success: "bg-green-500/10 text-green-500 border-green-500/20",
+    error: "bg-red-500/10 text-red-500 border-red-500/20",
+    loading: "bg-blue-500/10 text-blue-500 border-blue-500/20"
+  };
+
+  return (
+    <div className={`flex items-center gap-2 p-2 my-2 border rounded ${styles[type]} max-w-full break-words`}>
+      {type === 'success' && <CheckCircle2 size={16} className="flex-shrink-0" />}
+      {type === 'error' && <AlertCircle size={16} className="flex-shrink-0" />}
+      {type === 'loading' && <Loader2 size={16} className="animate-spin flex-shrink-0" />}
+      <span className="text-sm">{message}</span>
+    </div>
+  );
+};
+
+// Optional: Add a mobile overlay component to close sidebar when clicking outside
+const MobileOverlay = ({ isOpen, onClose }) => {
+  if (!isOpen || window.innerWidth >= 768) return null;
+  
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-0"
+      onClick={onClose}
+      aria-hidden="true"
+    />
+  );
+};
   // Define initial content for each file
   const fileContents = {
     'welcome.md': "# Welcome to My Portfolio\n\nI'm a passionate software engineer with expertise in full-stack development and AI/ML.\n\nExplore my work by clicking on the files in the sidebar!",
@@ -171,20 +199,25 @@ const Portfolio = () => {
   };
   
   
-  const handleFileClick = (file) => {
-    if (file === 'resume.pdf') {
-      if (!openTabs.find(tab => tab.id === file)) {
-        setOpenTabs(prev => [...prev, { id: file, content: null }]);
-      }
-      setActiveTab(file);
-    } else {
-      if (!openTabs.find(tab => tab.id === file)) {
-        const content = getFileContent(file);
-        setOpenTabs(prev => [...prev, { id: file, content }]);
-      }
-      setActiveTab(file);
+// Modify the handleFileClick function
+const handleFileClick = (file) => {
+  if (file === 'resume.pdf') {
+    if (!openTabs.find(tab => tab.id === file)) {
+      setOpenTabs(prev => [...prev, { id: file, content: null }]);
     }
-  };
+    setActiveTab(file);
+  } else {
+    if (!openTabs.find(tab => tab.id === file)) {
+      const content = getFileContent(file);
+      setOpenTabs(prev => [...prev, { id: file, content }]);
+    }
+    setActiveTab(file);
+  }
+  // Close sidebar on mobile after file selection
+  if (window.innerWidth < 768) {
+    setIsSidebarOpen(false);
+  }
+};
 
   const renderContent = () => {
     if (activeTab === 'resume.pdf' && pdfData) {
@@ -360,148 +393,173 @@ const Portfolio = () => {
     );
   };
 
-  const renderLineWithHighlighting = (line) => {
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    const editableAreas = [
-      { placeholder: "### ENTER YOUR NAME ###", type: "name" },
-      { placeholder: "### ENTER YOUR EMAIL ###", type: "email" },
-      { placeholder: "### ENTER YOUR MESSAGE ###", type: "message" }
-    ];
-  
-    // Add special styling for enterprise project notes
-    if (line.includes('Note: This is a private enterprise project')) {
-      return (
-        <span className="text-yellow-500 italic">
-          {line}
-        </span>
-      );
-    }
-  
-    // Add special styling for impact points
-    if (line.trim().startsWith('"- ')) {
-      return (
-        <span className="text-green-400">
-          {line}
-        </span>
-      );
-    }
-  
-    if (line.trim().startsWith('"Company:')) {
-      return (
-        <span className="text-blue-400 font-semibold">
-          {line}
-        </span>
-      );
-    }
-  
-    if (line.match(linkRegex)) {
-      return (
-        <span>
-          {line.split(linkRegex).map((part, index, array) => {
-            if (index % 3 === 1) {
-              return (
-                <span
-                  key={index}
-                  className="text-blue-400 cursor-pointer hover:underline"
-                  onClick={() => handleLinkClick(array[index + 1])}
-                >
-                  {part}
-                </span>
-              );
-            } else if (index % 3 === 2) {
-              return null;
-            }
-            return part;
-          })}
-        </span>
-      );
-    }
-  
-    for (const area of editableAreas) {
-      if (line.includes(area.placeholder)) {
-        return (
-          <span>
-            {line.split(area.placeholder).map((part, index, array) => (
-              <React.Fragment key={index}>
-                {part}
-                {index < array.length - 1 && (
-                  <span 
-                    className="bg-blue-500 bg-opacity-20 px-1 cursor-pointer hover:bg-opacity-30"
-                    onClick={() => handleEditableClick(area.type)}
-                  >
-                    {editableValues[area.type]}
-                  </span>
-                )}
-              </React.Fragment>
-            ))}
-          </span>
-        );
-      }
-    }
-    return line;
-  };
+const renderLineWithHighlighting = (line) => {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const editableAreas = [
+    { placeholder: "### ENTER YOUR NAME ###", type: "name" },
+    { placeholder: "### ENTER YOUR EMAIL ###", type: "email" },
+    { placeholder: "### ENTER YOUR MESSAGE ###", type: "message" }
+  ];
 
-  return (
-    <div className="h-screen w-full flex flex-col bg-gray-900 text-gray-300 overflow-hidden">
-      {/* Header */}
-      <header className="h-16 flex-none bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700">
-        <h1 className="text-xl font-bold">Shubham Shinde - Software Engineer</h1>
-        <div className="flex space-x-4">
-          <button
-            onClick={() => handleSocialClick('https://github.com/shubhamshnd')}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-            title="GitHub"
-          >
-            <Github size={20} />
-          </button>
-          <button
-            onClick={() => handleSocialClick('https://www.linkedin.com/in/shubham-shnd/')}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-            title="LinkedIn"
-          >
-            <Linkedin size={20} />
-          </button>
-          <button
-            onClick={() => handleSocialClick('https://x.com/shubhamshnd')}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-            title="Twitter"
-          >
-            <Twitter size={20} />
-          </button>
-          <button
-            onClick={() => handleSocialClick('mailto:shubhamshindesunil.work@gmail.com')}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-            title="Email"
-          >
-            <Mail size={20} />
-          </button>
-          <button
-            onClick={downloadResume}
-            className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-          >
-            <Download size={16} className="mr-2" />
-            Resume
-          </button>
-        </div>
-      </header>
+  // Add special styling for enterprise project notes
+  if (line.includes('Note: This is a private enterprise project')) {
+    return (
+      <span className="text-yellow-500 italic break-words">
+        {line}
+      </span>
+    );
+  }
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-64 flex-none bg-gray-800 border-r border-gray-700 overflow-hidden">
-          <div className="h-full p-2">
-            <div className="text-sm text-gray-500 mb-2">EXPLORER</div>
-            <div>
-              <div 
-                className="flex items-center py-1 px-2 hover:bg-gray-700 cursor-pointer" 
-                onClick={() => toggleFolder('portfolio')}
+  // Add special styling for impact points
+  if (line.trim().startsWith('"- ')) {
+    return (
+      <span className="text-green-400 break-words">
+        {line}
+      </span>
+    );
+  }
+
+  if (line.trim().startsWith('"Company:')) {
+    return (
+      <span className="text-blue-400 font-semibold break-words">
+        {line}
+      </span>
+    );
+  }
+
+  if (line.match(linkRegex)) {
+    return (
+      <span className="break-words">
+        {line.split(linkRegex).map((part, index, array) => {
+          if (index % 3 === 1) {
+            return (
+              <span
+                key={index}
+                className="text-blue-400 cursor-pointer hover:underline"
+                onClick={() => handleLinkClick(array[index + 1])}
               >
-                {expandedFolders.portfolio ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                <Folder size={16} className="ml-1 mr-2" />
-                <span>portfolio-Final1111</span>
-              </div>
-              {expandedFolders.portfolio && (
-                <div className="ml-4">
+                {part}
+              </span>
+            );
+          } else if (index % 3 === 2) {
+            return null;
+          }
+          return part;
+        })}
+      </span>
+    );
+  }
+
+  for (const area of editableAreas) {
+    if (line.includes(area.placeholder)) {
+      return (
+        <span className="break-words">
+          {line.split(area.placeholder).map((part, index, array) => (
+            <React.Fragment key={index}>
+              {part}
+              {index < array.length - 1 && (
+                <span 
+                  className="bg-blue-500 bg-opacity-20 px-1 cursor-pointer hover:bg-opacity-30"
+                  onClick={() => handleEditableClick(area.type)}
+                >
+                  {editableValues[area.type]}
+                </span>
+              )}
+            </React.Fragment>
+          ))}
+        </span>
+      );
+    }
+  }
+  return <span className="break-words">{line}</span>;
+};
+
+return (
+  <div className="h-screen w-full flex flex-col bg-gray-900 text-gray-300 overflow-hidden">
+    {/* Header */}
+    <header className="h-auto md:h-16 flex-none bg-gray-800 p-4 flex flex-col md:flex-row justify-between items-center border-b border-gray-700 gap-4 md:gap-0">
+      <div className="flex items-center w-full md:w-auto justify-between">
+        <button 
+          className="md:hidden p-2 hover:bg-gray-700 rounded-full"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          aria-label="Toggle menu"
+        >
+          <Menu size={20} />
+        </button>
+        <h1 className="text-lg md:text-xl font-bold truncate">
+          Shubham Shinde - Software Engineer
+        </h1>
+      </div>
+      
+      <div className="flex space-x-2 md:space-x-4 w-full md:w-auto justify-center md:justify-end">
+        <button
+          onClick={() => handleSocialClick('https://github.com/shubhamshnd')}
+          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          title="GitHub"
+        >
+          <Github size={20} />
+        </button>
+        <button
+          onClick={() => handleSocialClick('https://www.linkedin.com/in/shubham-shnd/')}
+          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          title="LinkedIn"
+        >
+          <Linkedin size={20} />
+        </button>
+        <button
+          onClick={() => handleSocialClick('https://x.com/shubhamshnd')}
+          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          title="Twitter"
+        >
+          <Twitter size={20} />
+        </button>
+        <button
+          onClick={() => handleSocialClick('mailto:shubhamshindesunil.work@gmail.com')}
+          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          title="Email"
+        >
+          <Mail size={20} />
+        </button>
+        <button
+          onClick={downloadResume}
+          className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+        >
+          <Download size={16} className="mr-2" />
+          <span className="hidden sm:inline">Resume</span>
+        </button>
+      </div>
+    </header>
+
+    {/* Main Content Area */}
+    <div className="flex flex-1 overflow-hidden relative">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && window.innerWidth < 768 && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-0"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside 
+        className={`absolute md:relative w-64 bg-gray-800 border-r border-gray-700 
+          overflow-hidden transition-transform duration-300 h-full z-10
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+      >
+        <div className="h-full p-2">
+          <div className="text-sm text-gray-500 mb-2">EXPLORER</div>
+          <div>
+            <div 
+              className="flex items-center py-1 px-2 hover:bg-gray-700 cursor-pointer" 
+              onClick={() => toggleFolder('portfolio')}
+            >
+              {expandedFolders.portfolio ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              <Folder size={16} className="ml-1 mr-2" />
+              <span className="truncate">portfolio-Final1111</span>
+            </div>
+            {expandedFolders.portfolio && (
+              <div className="ml-4">
                 {[
                   'welcome.md',
                   'projects.json',
@@ -513,58 +571,62 @@ const Portfolio = () => {
                 ].map((file) => (
                   <div
                     key={file}
-                    className={`flex items-center py-1 px-2 hover:bg-gray-700 cursor-pointer ${
-                      activeTab === file ? 'bg-gray-700' : ''
-                    }`}
-                    onClick={() => handleFileClick(file)}
+                    className={`flex items-center py-1 px-2 hover:bg-gray-700 cursor-pointer
+                      ${activeTab === file ? 'bg-gray-700' : ''}`}
+                    onClick={() => {
+                      handleFileClick(file);
+                      if (window.innerWidth < 768) {
+                        setIsSidebarOpen(false);
+                      }
+                    }}
                   >
                     {file === 'resume.pdf' ? (
-                      <FileText size={16} className="mr-2" />
+                      <FileText size={16} className="mr-2 flex-shrink-0" />
                     ) : (
-                      <File size={16} className="mr-2" />
+                      <File size={16} className="mr-2 flex-shrink-0" />
                     )}
-                    <span className="text-sm">{file}</span>
+                    <span className="text-sm truncate">{file}</span>
                   </div>
                 ))}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        </aside>
+        </div>
+      </aside>
 
-        {/* Editor Area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab Bar */}
-          <div className="h-9 flex-none bg-gray-800 px-2 flex items-center justify-between border-b border-gray-700">
-          <div className="flex items-center space-x-2 overflow-x-auto">
+      {/* Editor Area */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {/* Tab Bar */}
+        <div className="h-auto md:h-9 flex-none bg-gray-800 px-2 flex flex-wrap items-center 
+          justify-between border-b border-gray-700 gap-2">
+          <div className="flex items-center space-x-2 overflow-x-auto max-w-full py-1 scrollbar-thin
+            scrollbar-thumb-gray-600 scrollbar-track-transparent">
             {openTabs.map(tab => (
               <div
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-3 py-1 rounded-t cursor-pointer ${
-                  activeTab === tab.id ? 'bg-gray-700' : 'bg-gray-800 hover:bg-gray-700'
-                }`}
+                className={`flex items-center px-3 py-1 rounded-t cursor-pointer min-w-0 
+                  ${activeTab === tab.id ? 'bg-gray-700' : 'bg-gray-800 hover:bg-gray-700'}`}
               >
-                <span className="text-sm">{tab.id}</span>
+                <span className="text-sm truncate max-w-[100px] sm:max-w-[200px]">{tab.id}</span>
                 <button
                   onClick={(e) => closeTab(tab.id, e)}
-                  className="ml-2 p-1 hover:bg-gray-600 rounded"
+                  className="ml-2 p-1 hover:bg-gray-600 rounded flex-shrink-0"
                 >
                   <X size={14} />
                 </button>
               </div>
             ))}
           </div>
+          
           {activeTab === 'contact.py' && (
-            <div className="relative flex items-center">
+            <div className="relative flex items-center py-1">
               <button
                 onClick={handleCodeExecution}
                 disabled={formStatus.loading}
-                className={`flex items-center px-3 py-1 rounded-md transition-colors ${
-                  formStatus.loading
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-green-600 hover:bg-green-700'
-                }`}
+                className={`flex items-center px-3 py-1 rounded-md transition-colors 
+                  ${formStatus.loading ? 'bg-gray-600 cursor-not-allowed' 
+                  : 'bg-green-600 hover:bg-green-700'}`}
               >
                 {formStatus.loading ? (
                   <Loader2 size={16} className="mr-2 animate-spin" />
@@ -573,8 +635,9 @@ const Portfolio = () => {
                 )}
                 {formStatus.loading ? 'Sending...' : 'Run'}
               </button>
+              
               {formStatus.message && (
-                <div className="absolute top-full right-0 mt-2 z-50 min-w-[200px]">
+                <div className="absolute top-full right-0 mt-2 z-50 w-full sm:min-w-[200px]">
                   <StatusMessage 
                     type={formStatus.error ? 'error' : formStatus.loading ? 'loading' : 'success'} 
                     message={formStatus.message} 
@@ -585,50 +648,52 @@ const Portfolio = () => {
           )}
         </div>
 
-          {/* Code Area */}
-          <div className="flex-1 relative bg-gray-900 overflow-auto">
-            {activeTab && (
-              <div className="absolute inset-0">
-                {activeTab === 'resume.pdf' && pdfData ? (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-900">
-                    <iframe
-                      src={URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }))}
-                      className="w-full h-full"
-                      title="Resume PDF"
-                    />
-                  </div>
-                ) : (
-                  <pre className="font-mono text-sm">
-                    <code className="block p-4">
-                      {openTabs
-                        .find(tab => tab.id === activeTab)
-                        ?.content.split('\n')
-                        .map((line, index) => (
-                          <div key={index} className="group flex">
-                            <div className="flex-none">
-                              {renderLineNumber(index)}
-                            </div>
-                            <div className="flex-1 pl-4 break-words whitespace-pre-wrap py-0.5">
-                              {renderLineWithHighlighting(line)}
-                            </div>
+        {/* Code Area */}
+        <div className="flex-1 relative bg-gray-900 overflow-auto">
+          {activeTab && (
+            <div className="absolute inset-0">
+              {activeTab === 'resume.pdf' && pdfData ? (
+                <div className="w-full h-full flex items-center justify-center bg-gray-900">
+                  <iframe
+                    src={URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }))}
+                    className="w-full h-full"
+                    title="Resume PDF"
+                  />
+                </div>
+              ) : (
+                <pre className="font-mono text-sm">
+                  <code className="block p-4">
+                    {openTabs
+                      .find(tab => tab.id === activeTab)
+                      ?.content.split('\n')
+                      .map((line, index) => (
+                        <div key={index} className="group flex min-w-0">
+                          <div className="flex-none">
+                            {renderLineNumber(index)}
                           </div>
-                        ))}
-                    </code>
-                  </pre>
-                )}
-              </div>
-            )}
-          </div>
+                          <div className="flex-1 pl-4 break-words whitespace-pre-wrap py-0.5 
+                            overflow-x-auto">
+                            {renderLineWithHighlighting(line)}
+                          </div>
+                        </div>
+                      ))}
+                  </code>
+                </pre>
+              )}
+            </div>
+          )}
+        </div>
 
-          {/* Status Bar */}
-          <div className="h-6 flex-none bg-gray-800 px-4 py-1 text-sm flex justify-between border-t border-gray-700">
-            <div>Open Files: {openTabs.length}</div>
-            <div>Portfolio</div>
-          </div>
-        </main>
-      </div>
+        {/* Status Bar */}
+        <div className="h-6 flex-none bg-gray-800 px-4 py-1 text-xs md:text-sm flex 
+          justify-between border-t border-gray-700">
+          <div>Open Files: {openTabs.length}</div>
+          <div className="truncate">Portfolio</div>
+        </div>
+      </main>
     </div>
-  );
+  </div>
+);
 };
 
 export default Portfolio;
