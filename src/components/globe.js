@@ -50,7 +50,14 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches
     const mono = getComputedStyle(document.body).getPropertyValue('--font-mono').trim() || 'monospace'
     const proj = geoOrthographic().clipAngle(90).precision(0.3)
-    const path = geoPath(proj, ctx)
+    // Unclipped twin, so arc points lifted above the far side can still be placed.
+    const raw = geoOrthographic().clipAngle(null)
+    // Sea, grid and coastlines only change when the camera moves: draw them once into `base`, then
+    // each frame is one image copy plus the arcs and markers.
+    const base = document.createElement('canvas')
+    const bctx = base.getContext('2d')
+    const bpath = geoPath(proj, bctx)
+    let baseKey = ''
     const sphere = { type: 'Sphere' }
     const grid10 = geoGraticule().step([10, 10])()
     const grid1 = geoGraticule().step([1, 1]).extent([[50, 0], [95, 35]])()
@@ -59,32 +66,80 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     let w = 0, dpr = 1, lo = null, hi = null
     let anim = null, raf = 0, last = 0, drawn = 0, dead = false
 
-    const draw = () => {
-      if (!w) return
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      ctx.clearRect(0, 0, w, w)
-      ctx.globalAlpha = state.alpha
-      proj.translate([w / 2 - cam.shift * w, w / 2]).scale(w * 0.44 * cam.z).rotate([-cam.lon, -cam.lat])
-
-      ctx.beginPath(); path(sphere); ctx.fillStyle = C.sea; ctx.fill()
-      ctx.beginPath(); path(cam.z > 3 ? grid1 : grid10); ctx.strokeStyle = C.grid; ctx.lineWidth = 0.6; ctx.stroke()
+    const drawBase = () => {
+      bctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      bctx.clearRect(0, 0, w, w)
+      bctx.beginPath(); bpath(sphere); bctx.fillStyle = C.sea; bctx.fill()
+      bctx.beginPath(); bpath(cam.z > 3 ? grid1 : grid10); bctx.strokeStyle = C.grid; bctx.lineWidth = 0.6; bctx.stroke()
       const shape = cam.z > 2.2 && hi ? hi : lo
       if (shape) {
-        ctx.beginPath(); path(shape)
-        ctx.fillStyle = C.land; ctx.fill()
-        ctx.strokeStyle = C.coast; ctx.lineWidth = 0.9; ctx.stroke()
+        bctx.beginPath(); bpath(shape)
+        bctx.fillStyle = C.land; bctx.fill()
+        bctx.strokeStyle = C.coast; bctx.lineWidth = 0.9; bctx.stroke()
       }
-      ctx.beginPath(); path(sphere); ctx.strokeStyle = C.rim; ctx.lineWidth = 1; ctx.stroke()
+      bctx.beginPath(); bpath(sphere); bctx.strokeStyle = C.rim; bctx.lineWidth = 1; bctx.stroke()
+    }
 
-      // Route travelled so far, then spokes to the wider network.
+    // Great-circle path bowed upward on screen like a bridge, rising with the length of the hop,
+    // so routes read as floating above the chart from any camera angle.
+    const N = 40
+    const arcPoints = (a, b) => {
+      const from = ll(a), to = ll(b)
+      const along = geoInterpolate(from, to)
+      const centre = [cam.lon, cam.lat]
+      const [ax, ay] = raw(from), [bx, by] = raw(to)
+      const rise = Math.min(Math.hypot(bx - ax, by - ay) * 0.35, w * 0.3)
+      const pts = []
+      for (let i = 0; i <= N; i++) {
+        const s = i / N, p = along(s)
+        const [x, y] = raw(p)
+        pts.push([x, y - rise * Math.sin(Math.PI * s), geoDistance(p, centre) < Math.PI / 2])
+      }
+      return pts
+    }
+    const trace = (pts, i0, i1) => {
+      ctx.beginPath()
+      let pen = false
+      for (let i = i0; i <= i1; i++) {
+        const [x, y, on] = pts[i]
+        if (!on) { pen = false; continue }
+        pen ? ctx.lineTo(x, y) : ctx.moveTo(x, y)
+        pen = true
+      }
+      ctx.stroke()
+    }
+    const floatArc = (a, b, k, t) => {
+      const pts = arcPoints(a, b)
+      ctx.lineCap = 'round'
+      ctx.strokeStyle = 'rgba(255,176,32,0.16)'; ctx.lineWidth = 5; trace(pts, 0, N)
+      ctx.strokeStyle = 'rgba(255,196,90,0.85)'; ctx.lineWidth = 1.3; trace(pts, 0, N)
+      if (still) return
+      // A light pulse runs along each arc, staggered so they don't move in lockstep.
+      const head = Math.floor((((t / 1900) + k * 0.37) % 1) * N)
+      ctx.strokeStyle = 'rgba(255,243,214,0.9)'; ctx.lineWidth = 2.2; trace(pts, Math.max(0, head - 6), head)
+      const [x, y, on] = pts[head]
+      if (on) { ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI * 2); ctx.fillStyle = '#fff3d6'; ctx.fill() }
+    }
+
+    const draw = (t = performance.now()) => {
+      if (!w) return
+      proj.translate([w / 2 - cam.shift * w, w / 2]).scale(w * 0.44 * cam.z).rotate([-cam.lon, -cam.lat])
+      raw.translate(proj.translate()).scale(proj.scale()).rotate(proj.rotate())
+      const key = [w, dpr, cam.lon, cam.lat, cam.z, cam.shift, lo ? 1 : 0, hi ? 1 : 0].join()
+      if (key !== baseKey) { baseKey = key; drawBase() }
+      ctx.setTransform(1, 0, 0, 1, 0, 0)
+      ctx.clearRect(0, 0, el.width, el.height)
+      ctx.globalAlpha = state.alpha
+      ctx.drawImage(base, 0, 0)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+      // Route travelled so far, then spokes to the wider network, floating above the chart.
       const { step } = state
       const all = step >= journey.length
       const port = step >= 0 && !all
-      ctx.setLineDash([5, 4]); ctx.strokeStyle = C.amber; ctx.lineWidth = 1.4
-      const line = (a, b) => { ctx.beginPath(); path({ type: 'LineString', coordinates: [ll(a), ll(b)] }); ctx.stroke() }
-      for (let k = 1; k <= Math.min(step, journey.length - 1); k++) line(journey[k - 1].location, journey[k].location)
-      if (all) network.forEach((p) => line(HUB, p.location))
-      ctx.setLineDash([])
+      let k = 0
+      for (let i = 1; i <= Math.min(step, journey.length - 1); i++) floatArc(journey[i - 1].location, journey[i].location, k++, t)
+      if (all) network.forEach((p) => floatArc(HUB, p.location, k++, t))
 
       // Markers and labels; labels skip any spot already taken so close ports don't overprint.
       const centre = [cam.lon, cam.lat]
@@ -146,8 +201,9 @@ export default function Globe({ stop, shift = 0, className = '' }) {
         cam.lon += dt * 0.004
         more = true
       }
+      if (state.step >= 1 && !still) more = true // arcs on screen: keep the pulses moving
       // ponytail: phones redraw at ~30 fps; the chart moves slowly and scrolling gets the rest.
-      if (w >= 500 || t - drawn >= 30 || !more) { draw(); drawn = t }
+      if (w >= 500 || t - drawn >= 30 || !more) { draw(t); drawn = t }
       if (more && !dead) raf = requestAnimationFrame(tick)
       else last = 0
     }
@@ -166,8 +222,9 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     const resize = () => {
       w = el.clientWidth
       dpr = Math.min(devicePixelRatio, 2)
-      el.width = Math.round(w * dpr)
-      el.height = Math.round(w * dpr)
+      base.width = el.width = Math.round(w * dpr)
+      base.height = el.height = Math.round(w * dpr)
+      baseKey = ''
       draw()
     }
     const ro = new ResizeObserver(resize)
