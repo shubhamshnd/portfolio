@@ -1,17 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+const c = (v) => `rgb(var(--${v}) / <alpha-value>)`
+
 module.exports = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ['./src/**/*.{js,jsx}'],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-      },
+      colors: { bg: c('bg'), panel: c('panel'), line: c('line'), ink: c('ink'), head: c('head'), accent: c('accent') },
+      fontFamily: { sans: ['var(--font-sans)'], mono: ['var(--font-mono)'] },
     },
   },
   plugins: [],
-};
+}

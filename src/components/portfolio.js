@@ -1,696 +1,348 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-// Add these imports at the top of your file
-import { ChevronRight, ChevronDown, File, Folder, Github, Linkedin, Twitter, 
-  Mail, Download, ExternalLink, X, Play, FileText, AlertCircle, Menu, 
-  CheckCircle2, Loader2 } from 'lucide-react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
+import Globe from '@/components/globe'
+import { profile, journey, network, projects } from '@/data/site'
 
-import { projectsData, experienceData, certificationsData, educationData, contactPythonCode } from '@/data/portfolio-data';
+const NAV = [
+  { id: 'about', label: 'About' },
+  { id: 'journey', label: 'Journey' },
+  { id: 'work', label: 'Work' },
+  { id: 'contact', label: 'Contact' },
+]
 
-const Portfolio = () => {
-  const [expandedFolders, setExpandedFolders] = useState({
-    portfolio: true,
-    projects: false,
-    experience: false,
-    education: false,
-    certifications: false
-  });
+const isVideo = (src) => /\.(mp4|webm)$/i.test(src)
 
-  const [editableValues, setEditableValues] = useState({
-    name: "### ENTER YOUR NAME ###",
-    email: "### ENTER YOUR EMAIL ###",
-    message: "### ENTER YOUR MESSAGE ###"
-  });
-  const [pdfData, setPdfData] = useState(null);
-  const [formStatus, setFormStatus] = useState({
-    loading: false,
-    error: null,
-    success: false,
-    message: ''
-  });
-  // Load PDF file when component mounts
+// Runs a DOM update inside a View Transition when the browser has it.
+function transition(update) {
+  if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return update()
+  document.startViewTransition(() => flushSync(update))
+}
+
+function useDesktop() {
+  const [desktop, setDesktop] = useState(null)
   useEffect(() => {
-    const loadPdf = async () => {
-      try {
-        const response = await fetch('/shubham_resume.pdf');
-        const blob = await response.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        setPdfData(new Uint8Array(arrayBuffer));
-      } catch (error) {
-        console.error('Error loading PDF:', error);
-      }
-    };
-    loadPdf();
-  }, []);
-const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-const [isMobile, setIsMobile] = useState(false);
-useEffect(() => {
-  const checkMobile = () => {
-    setIsMobile(window.innerWidth < 768);
-    setIsSidebarOpen(window.innerWidth >= 768);
-  };
+    const mq = matchMedia('(min-width: 1024px)')
+    const on = () => setDesktop(mq.matches)
+    on()
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
+  return desktop
+}
 
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-  return () => window.removeEventListener('resize', checkMobile);
-}, []);
-  
-const StatusMessage = ({ type, message }) => {
-  if (!message) return null;
-  
-  const styles = {
-    success: "bg-green-500/10 text-green-500 border-green-500/20",
-    error: "bg-red-500/10 text-red-500 border-red-500/20",
-    loading: "bg-blue-500/10 text-blue-500 border-blue-500/20"
-  };
+function caption(stop) {
+  const p = journey.find((j) => j.id === stop)
+  if (p) return [p.port, p.place]
+  if (stop === 'network') return ['JSW Infrastructure', 'Ports and terminals in India and the UAE']
+  return ['Route', `Scroll to start at ${journey[0].port}`]
+}
 
+function GlobePanel({ stop, size = 'min(760px, calc(100vh - 330px), 100%)' }) {
+  const [title, sub] = caption(stop)
   return (
-    <div className={`flex items-center gap-2 p-2 my-2 border rounded ${styles[type]} max-w-full break-words`}>
-      {type === 'success' && <CheckCircle2 size={16} className="flex-shrink-0" />}
-      {type === 'error' && <AlertCircle size={16} className="flex-shrink-0" />}
-      {type === 'loading' && <Loader2 size={16} className="animate-spin flex-shrink-0" />}
-      <span className="text-sm">{message}</span>
-    </div>
-  );
-};
+    <figure className="mx-auto w-full" style={{ maxWidth: size }}>
+      <Globe stop={stop} />
+      <figcaption className="mt-2 text-center font-mono text-xs" aria-live="polite">
+        <span className="text-accent">{title}</span>
+        <span className="text-ink/70"> · {sub}</span>
+      </figcaption>
+    </figure>
+  )
+}
 
-// Optional: Add a mobile overlay component to close sidebar when clicking outside
-const MobileOverlay = ({ isOpen, onClose }) => {
-  if (!isOpen || window.innerWidth >= 768) return null;
-  
+function Media({ src, alt, controls, fit = 'object-cover object-top' }) {
+  const cls = `h-full w-full ${fit}`
+  if (isVideo(src)) return <video src={src} className={cls} muted loop playsInline autoPlay={controls} controls={controls} preload="metadata" />
+  return <img src={src} alt={alt} className={cls} loading="lazy" />
+}
+
+function Thumb({ project, controls, ...rest }) {
+  const src = project.media[0]
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 z-0"
-      onClick={onClose}
-      aria-hidden="true"
-    />
-  );
-};
-  // Define initial content for each file
-  const fileContents = {
-    'welcome.md': "# Welcome to My Portfolio! 👋\n\nHi! I'm a passionate Software Engineer with expertise in full-stack development and AI/ML.\n\nThis portfolio is designed as an interactive IDE experience - feel free to explore each file to learn more about my journey and work!\n\n## 📁 File Structure\n\nportfolio-Final1111/\n├── 📋 projects.json       # Showcase of my open-source & enterprise projects\n├── 💼 experience.json     # Professional journey and accomplishments\n├── 🎓 education.json      # Academic background and achievements\n├── 🏆 certifications.json # Professional certifications and courses\n├── 📄 resume.pdf         # Downloadable resume\n└── ✉️ contact.py         # Get in touch with me!\n\n## 🔗 Quick Links\n   GitHub:   Find my open-source contributions\n   LinkedIn: Connect professionally\n   Twitter:  Follow my tech journey\n   Email:    Reach out directly\n\nFeel free to click through the files in the sidebar to learn more about each aspect\nof my professional journey. I've designed this portfolio to be interactive and\ninformative - enjoy exploring!\n\n---\nTip: Click on any file in the sidebar to view its contents. Start with projects.json\nto see my latest work, or head straight to contact.py if you'd like to get in touch!",
-    'projects.json': JSON.stringify(projectsData, null, 2),
-    'experience.json': JSON.stringify(experienceData, null, 2),
-    'education.json': JSON.stringify(educationData, null, 2),
-    'certifications.json': JSON.stringify(certificationsData, null, 2),
-    'contact.py': contactPythonCode,
-    'resume.pdf': null
-  };
-  
-
-  const [openTabs, setOpenTabs] = useState([
-    {
-      id: 'welcome.md',
-      content: fileContents['welcome.md']
-    }
-  ]);
-  
-  const [activeTab, setActiveTab] = useState('welcome.md');
-
-  const toggleFolder = (folder) => {
-    setExpandedFolders(prev => ({
-      ...prev,
-      [folder]: !prev[folder]
-    }));
-  };
-
-  const getFileContent = (filename) => {
-    // Handle projects.json with both open-source and enterprise projects
-    if (filename === 'projects.json') {
-      const projects = projectsData.projects.map(project => {
-        if (project.type === 'open-source') {
-          // Format for open-source projects
-          return {
-            name: project.name,
-            description: project.description,
-            technologies: project.technologies,
-            preview: project.preview,
-            links: project.github ? 
-              `Links: [GitHub](${project.github})${project.demo ? ` | [Live Demo](${project.demo})` : ''}` :
-              undefined
-          };
-        } else if (project.type === 'enterprise') {
-          // Format for enterprise/private projects
-          return {
-            name: project.name,
-            description: project.description,
-            technologies: project.technologies,
-            preview: project.preview,
-            company: `Company: ${project.company}`,
-            impact: [
-              "Project Impact:",
-              ...project.impact.map(item => `- ${item}`)
-            ],
-            note: "Note: This is a private enterprise project, source code is not publicly available."
-          };
-        }
-        return project;
-      });
-  
-      return JSON.stringify({ projects }, null, 2);
-    }
-    
-    // Handle certifications.json
-    else if (filename === 'certifications.json') {
-      const certifications = certificationsData.certifications.map(cert => ({
-        name: cert.name,
-        issuer: cert.issuer,
-        date: cert.date,
-        description: cert.description,
-        link: `[View Certificate](${cert.link})`
-      }));
-      return JSON.stringify({ certifications }, null, 2);
-    }
-    
-    // Handle education.json
-    else if (filename === 'education.json') {
-      const education = educationData.education.map(edu => ({
-        institution: edu.institution,
-        degree: edu.degree,
-        duration: edu.duration,
-        location: edu.location,
-        achievements: edu.achievements.map(achievement => `- ${achievement}`).join('\n')
-      }));
-      return JSON.stringify({ education }, null, 2);
-    }
-    
-    // Handle experience.json
-    else if (filename === 'experience.json') {
-      const experience = experienceData.experience.map(exp => ({
-        company: exp.company,
-        position: exp.position,
-        duration: exp.duration,
-        description: exp.description
-      }));
-      return JSON.stringify({ experience }, null, 2);
-    }
-    
-    // Handle welcome.md and contact.py
-    else if (filename === 'welcome.md' || filename === 'contact.py') {
-      return fileContents[filename] || '';
-    }
-    
-    // Default case for any other files
-    return fileContents[filename] || 'File content not found';
-  };
-  
-  
-// Modify the handleFileClick function
-const handleFileClick = (file) => {
-  if (file === 'resume.pdf') {
-    if (!openTabs.find(tab => tab.id === file)) {
-      setOpenTabs(prev => [...prev, { id: file, content: null }]);
-    }
-    setActiveTab(file);
-  } else {
-    if (!openTabs.find(tab => tab.id === file)) {
-      const content = getFileContent(file);
-      setOpenTabs(prev => [...prev, { id: file, content }]);
-    }
-    setActiveTab(file);
-  }
-  // Close sidebar on mobile after file selection
-  if (window.innerWidth < 768) {
-    setIsSidebarOpen(false);
-  }
-};
-
-  const renderContent = () => {
-    if (activeTab === 'resume.pdf' && pdfData) {
-      const blob = new Blob([pdfData], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      
-      return (
-        <div className="w-full h-full flex items-center justify-center bg-gray-900">
-          <iframe
-            src={url}
-            className="w-full h-full"
-            title="Resume PDF"
-          />
-        </div>
-      );
-    }
-  
-    const activeContent = openTabs.find(tab => tab.id === activeTab)?.content;
-    if (!activeContent) return null;
-  
-    return (
-      <pre className="font-mono text-xs md:text-sm">
-        <code className="block p-4">
-          {activeContent.split('\n').map((line, index) => (
-            <div key={index} className="group flex">
-              {renderLineNumber(index)}
-              <div className="flex-1 pl-4 break-words whitespace-pre-wrap py-0.5">
-                {renderLineWithHighlighting(line)}
-              </div>
-            </div>
-          ))}
-        </code>
-      </pre>
-    );
-  };
-  
-
-  const closeTab = (tabId, e) => {
-    e.stopPropagation();
-    setOpenTabs(prev => prev.filter(tab => tab.id !== tabId));
-    if (activeTab === tabId) {
-      setActiveTab(openTabs.length > 1 ? openTabs[openTabs.length - 2].id : null);
-    }
-  };
-
-  const handleSocialClick = (url) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  const handleLinkClick = (url) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  const downloadResume = () => {
-    if (pdfData) {
-      const blob = new Blob([pdfData], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'shubham_resume.pdf';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }
-  };
-  
-  const handleCodeExecution = async () => {
-    if (activeTab === 'contact.py') {
-      // Reset status
-      setFormStatus({
-        loading: true,
-        error: null,
-        success: false,
-        message: 'Sending message...'
-      });
-  
-      // Validation
-      if (
-        editableValues.name === "### ENTER YOUR NAME ###" ||
-        editableValues.email === "### ENTER YOUR EMAIL ###" ||
-        editableValues.message === "### ENTER YOUR MESSAGE ###"
-      ) {
-        setFormStatus({
-          loading: false,
-          error: true,
-          success: false,
-          message: 'Please fill in all fields before submitting.'
-        });
-        return;
-      }
-  
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(editableValues.email)) {
-        setFormStatus({
-          loading: false,
-          error: true,
-          success: false,
-          message: 'Please enter a valid email address.'
-        });
-        return;
-      }
-  
-      try {
-        const response = await fetch('/api/contact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: editableValues.name,
-            email: editableValues.email,
-            message: editableValues.message
-          })
-        });
-  
-        let data;
-        try {
-          data = await response.json();
-        } catch (e) {
-          throw new Error('Invalid response from server');
-        }
-  
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to send message');
-        }
-  
-        // Success
-        setFormStatus({
-          loading: false,
-          error: false,
-          success: true,
-          message: 'Message sent successfully! Please check your email for confirmation.'
-        });
-  
-        // Reset form
-        setEditableValues({
-          name: "### ENTER YOUR NAME ###",
-          email: "### ENTER YOUR EMAIL ###",
-          message: "### ENTER YOUR MESSAGE ###"
-        });
-  
-      } catch (error) {
-        setFormStatus({
-          loading: false,
-          error: true,
-          success: false,
-          message: error.message === 'Invalid response from server' 
-            ? 'Server error. Please try again later.'
-            : error.message || 'Failed to send message. Please try again.'
-        });
-      }
-    }
-  };
-
-  const handleEditableClick = (type) => {
-    const newValue = prompt(`Enter your ${type}:`, editableValues[type]);
-    if (newValue) {
-      setEditableValues(prev => ({
-        ...prev,
-        [type]: newValue
-      }));
-    }
-  };
-
-  const renderLineNumber = (index) => {
-    const number = (index + 1).toString();
-    return (
-      <div className="sticky left-0 w-12 flex-none bg-gray-900 text-gray-500 select-none text-right pr-4 py-0.5">
-        {number}
-      </div>
-    );
-  };
-
-const renderLineWithHighlighting = (line) => {
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-  const editableAreas = [
-    { placeholder: "### ENTER YOUR NAME ###", type: "name" },
-    { placeholder: "### ENTER YOUR EMAIL ###", type: "email" },
-    { placeholder: "### ENTER YOUR MESSAGE ###", type: "message" }
-  ];
-
-  // Add special styling for enterprise project notes
-  if (line.includes('Note: This is a private enterprise project')) {
-    return (
-      <span className="text-yellow-500 italic break-words">
-        {line}
-      </span>
-    );
-  }
-
-  // Add special styling for impact points
-  if (line.trim().startsWith('"- ')) {
-    return (
-      <span className="text-green-400 break-words">
-        {line}
-      </span>
-    );
-  }
-
-  if (line.trim().startsWith('"Company:')) {
-    return (
-      <span className="text-blue-400 font-semibold break-words">
-        {line}
-      </span>
-    );
-  }
-
-  if (line.match(linkRegex)) {
-    return (
-      <span className="break-words">
-        {line.split(linkRegex).map((part, index, array) => {
-          if (index % 3 === 1) {
-            return (
-              <span
-                key={index}
-                className="text-blue-400 cursor-pointer hover:underline"
-                onClick={() => handleLinkClick(array[index + 1])}
-              >
-                {part}
-              </span>
-            );
-          } else if (index % 3 === 2) {
-            return null;
-          }
-          return part;
-        })}
-      </span>
-    );
-  }
-
-  for (const area of editableAreas) {
-    if (line.includes(area.placeholder)) {
-      return (
-        <span className="break-words">
-          {line.split(area.placeholder).map((part, index, array) => (
-            <React.Fragment key={index}>
-              {part}
-              {index < array.length - 1 && (
-                <span 
-                  className="bg-blue-500 bg-opacity-20 px-1 cursor-pointer hover:bg-opacity-30"
-                  onClick={() => handleEditableClick(area.type)}
-                >
-                  {editableValues[area.type]}
-                </span>
-              )}
-            </React.Fragment>
-          ))}
+    <div className="dots relative aspect-video overflow-hidden rounded-md border border-line bg-panel" {...rest}>
+      {src ? (
+        <Media src={src} alt={project.name} controls={controls} />
+      ) : (
+        <span className="absolute inset-0 grid place-items-center font-mono text-xs uppercase tracking-widest text-ink/50">
+          screens coming
         </span>
-      );
-    }
-  }
-  return <span className="break-words">{line}</span>;
-};
+      )}
+    </div>
+  )
+}
 
-return (
-  <div className="h-screen w-full flex flex-col bg-gray-900 text-gray-300 overflow-hidden">
-    {/* Header */}
-    <header className="h-auto md:h-16 flex-none bg-gray-800 p-4 flex flex-col md:flex-row justify-between items-center border-b border-gray-700 gap-4 md:gap-0">
-      <div className="flex items-center w-full md:w-auto justify-between">
-        <button 
-          className="md:hidden p-2 hover:bg-gray-700 rounded-full"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          aria-label="Toggle menu"
-        >
-          <Menu size={20} />
-        </button>
-        <h1 className="text-lg md:text-xl font-bold truncate">
-          Shubham Shinde - Software Engineer
-        </h1>
-      </div>
-      
-      <div className="flex space-x-2 md:space-x-4 w-full md:w-auto justify-center md:justify-end">
-        <button
-          onClick={() => handleSocialClick('https://github.com/shubhamshnd')}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="GitHub"
-        >
-          <Github size={20} />
-        </button>
-        <button
-          onClick={() => handleSocialClick('https://www.linkedin.com/in/shubham-shnd/')}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="LinkedIn"
-        >
-          <Linkedin size={20} />
-        </button>
-        <button
-          onClick={() => handleSocialClick('https://x.com/shubhamshnd')}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="Twitter"
-        >
-          <Twitter size={20} />
-        </button>
-        <button
-          onClick={() => handleSocialClick('mailto:shubhamshindesunil.work@gmail.com')}
-          className="p-2 hover:bg-gray-700 rounded-full transition-colors"
-          title="Email"
-        >
-          <Mail size={20} />
-        </button>
-        <button
-          onClick={downloadResume}
-          className="flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-        >
-          <Download size={16} className="mr-2" />
-          <span className="hidden sm:inline">Resume</span>
-        </button>
-      </div>
-    </header>
+function Viewer({ project, onClose }) {
+  const ref = useRef(null)
+  const [i, setI] = useState(0)
+  useLayoutEffect(() => ref.current.showModal(), [])
+  const n = project.media.length
+  const src = project.media[i]
+  const go = (d) => setI((x) => (x + d + n) % n)
 
-    {/* Main Content Area */}
-    <div className="flex flex-1 overflow-hidden relative">
-      {/* Mobile Overlay */}
-{isSidebarOpen && isMobile && (
-  <div 
-    className="fixed inset-0 bg-black bg-opacity-50 z-0"
-    onClick={() => setIsSidebarOpen(false)}
-    aria-hidden="true"
-  />
-)}
-      
-      {/* Sidebar */}
-      <aside 
-        className={`absolute md:relative w-64 bg-gray-800 border-r border-gray-700 
-          overflow-hidden transition-transform duration-300 h-full z-10
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-      >
-        <div className="h-full p-2">
-          <div className="text-sm text-gray-500 mb-2">EXPLORER</div>
-          <div>
-            <div 
-              className="flex items-center py-1 px-2 hover:bg-gray-700 cursor-pointer" 
-              onClick={() => toggleFolder('portfolio')}
-            >
-              {expandedFolders.portfolio ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              <Folder size={16} className="ml-1 mr-2" />
-              <span className="truncate">portfolio-Final1111</span>
+  return (
+    <dialog
+      ref={ref}
+      className="viewer m-auto w-[min(1000px,calc(100vw-2rem))] rounded-lg border border-line bg-bg p-0 text-ink"
+      onCancel={(e) => (e.preventDefault(), onClose())}
+      onClick={(e) => e.target === ref.current && onClose()}
+      onKeyDown={(e) => n > 1 && (e.key === 'ArrowRight' ? go(1) : e.key === 'ArrowLeft' && go(-1))}
+    >
+      <div style={{ viewTransitionName: `p-${project.id}` }}>
+        {src ? (
+          <div className="relative aspect-[16/7] bg-black">
+            <div className="fade h-full" key={src}>
+              <Media src={src} alt={`${project.name} screen ${i + 1}`} controls fit="object-contain" />
             </div>
-            {expandedFolders.portfolio && (
-              <div className="ml-4">
-                {[
-                  'welcome.md',
-                  'projects.json',
-                  'experience.json',
-                  'education.json',
-                  'certifications.json',
-                  'contact.py',
-                  'resume.pdf'
-                ].map((file) => (
-                  <div
-                    key={file}
-                    className={`flex items-center py-1 px-2 hover:bg-gray-700 cursor-pointer
-                      ${activeTab === file ? 'bg-gray-700' : ''}`}
-                    onClick={() => {
-                      handleFileClick(file);
-                      if (window.innerWidth < 768) {
-                        setIsSidebarOpen(false);
-                      }
-                    }}
-                  >
-                    {file === 'resume.pdf' ? (
-                      <FileText size={16} className="mr-2 flex-shrink-0" />
-                    ) : (
-                      <File size={16} className="mr-2 flex-shrink-0" />
-                    )}
-                    <span className="text-sm truncate">{file}</span>
-                  </div>
-                ))}
-              </div>
+            {n > 1 && (
+              <>
+                <button onClick={() => go(-1)} className="carousel-btn left-3" aria-label="Previous screen">←</button>
+                <button onClick={() => go(1)} className="carousel-btn right-3" aria-label="Next screen">→</button>
+                <span className="absolute bottom-3 right-3 rounded bg-black/70 px-2 py-1 font-mono text-xs text-head">
+                  {i + 1} / {n}
+                </span>
+              </>
             )}
           </div>
+        ) : (
+          <Thumb project={project} />
+        )}
+      </div>
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="text-xl font-semibold text-head">{project.name}</h3>
+          <button onClick={onClose} className="font-mono text-sm text-ink hover:text-accent" autoFocus>
+            Close ✕
+          </button>
         </div>
-      </aside>
-
-      {/* Editor Area */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Tab Bar */}
-        <div className="h-auto md:h-9 flex-none bg-gray-800 px-2 flex flex-wrap items-center 
-          justify-between border-b border-gray-700 gap-2">
-          <div className="flex items-center space-x-2 overflow-x-auto max-w-full py-1 scrollbar-thin
-            scrollbar-thumb-gray-600 scrollbar-track-transparent">
-            {openTabs.map(tab => (
-              <div
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-3 py-1 rounded-t cursor-pointer min-w-0 
-                  ${activeTab === tab.id ? 'bg-gray-700' : 'bg-gray-800 hover:bg-gray-700'}`}
+        <p className="mt-2 max-w-prose">{project.summary}</p>
+        <Stats items={project.stats} />
+        <Stack items={project.stack} />
+        {project.media.length > 1 && (
+          <div className="mt-6 flex gap-3 overflow-x-auto">
+            {project.media.map((m, n) => (
+              <button
+                key={m}
+                onClick={() => setI(n)}
+                className={`h-16 w-28 shrink-0 overflow-hidden rounded border ${n === i ? 'border-accent' : 'border-line opacity-60 hover:opacity-100'}`}
+                aria-label={`Show item ${n + 1}`}
               >
-                <span className="text-sm truncate max-w-[100px] sm:max-w-[200px]">{tab.id}</span>
-                <button
-                  onClick={(e) => closeTab(tab.id, e)}
-                  className="ml-2 p-1 hover:bg-gray-600 rounded flex-shrink-0"
-                >
-                  <X size={14} />
-                </button>
-              </div>
+                <Media src={m} alt="" />
+              </button>
             ))}
           </div>
-          
-          {activeTab === 'contact.py' && (
-            <div className="relative flex items-center py-1">
+        )}
+      </div>
+    </dialog>
+  )
+}
+
+function Stats({ items = [] }) {
+  if (!items.length) return null
+  return (
+    <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-mono text-sm text-accent">
+      {items.map((s) => (
+        <li key={s}>{s}</li>
+      ))}
+    </ul>
+  )
+}
+
+function Stack({ items }) {
+  return (
+    <ul className="mt-4 flex flex-wrap gap-2">
+      {items.map((s) => (
+        <li key={s} className="rounded-full bg-accent/10 px-3 py-1 font-mono text-xs text-accent">
+          {s}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function PortStop({ p, n, active, onOpen }) {
+  const built = projects.filter((x) => x.ports?.includes(p.id))
+  return (
+    <article
+      data-stop={p.id}
+      data-nav="journey"
+      className={`reveal min-h-[70vh] py-12 transition-opacity duration-500 lg:min-h-[80vh] ${active ? '' : 'lg:opacity-40'}`}
+    >
+      <p className="font-mono text-xs uppercase tracking-widest text-accent">
+        {String(n + 1).padStart(2, '0')}
+        {p.when && ` · ${p.when}`}
+      </p>
+      <h3 className="mt-3 text-3xl font-semibold text-head">{p.port}</h3>
+      <p className="mt-1 text-sm">{p.place}</p>
+      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-ink/70">
+        {p.facts.map((f) => (
+          <li key={f}>{f}</li>
+        ))}
+      </ul>
+      {p.role && <p className="mt-6 text-head">{p.role}</p>}
+      {p.text && <p className="mt-2 max-w-prose leading-relaxed">{p.text}</p>}
+      {built.length > 0 && (
+        <ul className="mt-8 space-y-6 border-l border-line pl-5">
+          {built.map((x) => (
+            <li key={x.id}>
+              <p className="font-medium text-head">{x.name}</p>
+              <p className="mt-1 max-w-prose text-sm leading-relaxed">{x.summary}</p>
+              <Stats items={x.portStats?.[p.id] ?? x.stats} />
               <button
-                onClick={handleCodeExecution}
-                disabled={formStatus.loading}
-                className={`flex items-center px-3 py-1 rounded-md transition-colors 
-                  ${formStatus.loading ? 'bg-gray-600 cursor-not-allowed' 
-                  : 'bg-green-600 hover:bg-green-700'}`}
-              >
-                {formStatus.loading ? (
-                  <Loader2 size={16} className="mr-2 animate-spin" />
-                ) : (
-                  <Play size={16} className="mr-2" />
-                )}
-                {formStatus.loading ? 'Sending...' : 'Run'}
+                onClick={() => onOpen({ ...x, media: x.portMedia?.[p.id] ?? x.media, stats: x.portStats?.[p.id] ?? x.stats })}
+                className="mt-2 font-mono text-xs uppercase tracking-widest text-accent hover:underline">
+                View screens →
               </button>
-              
-              {formStatus.message && (
-                <div className="absolute top-full right-0 mt-2 z-50 w-full sm:min-w-[200px]">
-                  <StatusMessage 
-                    type={formStatus.error ? 'error' : formStatus.loading ? 'loading' : 'success'} 
-                    message={formStatus.message} 
-                  />
-                </div>
-              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </article>
+  )
+}
+
+export default function Portfolio() {
+  const desktop = useDesktop()
+  const [stop, setStop] = useState('about')
+  const [nav, setNav] = useState('about')
+  const [selected, setSelected] = useState(null)
+  const [open, setOpen] = useState(null)
+
+  // Whatever crosses the middle of the screen drives the globe and the nav.
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          setStop(e.target.dataset.stop)
+          setNav(e.target.dataset.nav)
+        }),
+      { rootMargin: '-50% 0px -50% 0px' },
+    )
+    document.querySelectorAll('[data-stop]').forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [desktop])
+
+  // morph: grow out of the Work card. Opening from a port list just cross-fades.
+  const openProject = (p, morph = true) => {
+    flushSync(() => setSelected(morph ? p.id : null))
+    transition(() => setOpen(p))
+  }
+  const close = () => transition(() => setOpen(null))
+
+  return (
+    <div className="mx-auto max-w-screen-xl px-6 md:px-12 lg:flex lg:justify-between lg:gap-12 lg:px-20">
+      <header className="pt-16 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-1/2 lg:flex-col lg:py-12">
+        <h1 className="text-4xl font-bold tracking-tight text-head sm:text-5xl">{profile.name}</h1>
+        <h2 className="mt-3 text-lg font-medium text-head">{profile.title}</h2>
+        <p className="mt-1 font-mono text-sm text-accent">{profile.domains}</p>
+
+        {/* One row so the globe gets the height. */}
+        <nav className="mt-6 hidden lg:block" aria-label="Sections">
+          <ul className="flex gap-6">
+            {NAV.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className={`border-b pb-1 font-mono text-xs uppercase tracking-widest transition-colors ${nav === s.id ? 'border-accent text-head' : 'border-transparent text-ink/60 hover:text-head'}`}
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {desktop && (
+          <div className="flex min-h-0 flex-1 items-center">
+            <GlobePanel stop={stop} />
+          </div>
+        )}
+
+        <ul className="mt-8 flex gap-6 font-mono text-sm lg:mt-0">
+          {profile.links.map((l) => (
+            <li key={l.label}>
+              <a href={l.href} target="_blank" rel="noreferrer" className="hover:text-accent">
+                {l.label} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
+      </header>
+
+      <main className="pt-16 lg:w-1/2 lg:py-24">
+        <section id="about" data-stop="about" data-nav="about" className="scroll-mt-16 lg:min-h-[60vh]">
+          <h2 className="label">About</h2>
+          <p className="max-w-prose text-2xl font-medium leading-snug text-head sm:text-3xl">{profile.lead}</p>
+          {profile.intro.map((t) => (
+            <p key={t} className="mt-5 max-w-prose leading-relaxed">
+              {t}
+            </p>
+          ))}
+          <dl className="mt-10 grid grid-cols-3 gap-4 border-y border-line py-6">
+            {profile.highlights.map((h) => (
+              <div key={h.label}>
+                <dt className="sr-only">{h.label}</dt>
+                <dd className="font-mono text-2xl font-medium text-accent sm:text-3xl">{h.value}</dd>
+                <dd className="mt-1 text-xs leading-snug sm:text-sm">{h.label}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-6 font-mono text-xs text-ink/60">Scroll to follow the route ↓</p>
+        </section>
+
+        <section id="journey" className="mt-24 scroll-mt-16">
+          <h2 className="label">Journey</h2>
+          {desktop === false && (
+            <div className="sticky top-0 z-10 -mx-6 bg-bg/90 px-6 py-2 backdrop-blur md:-mx-12 md:px-12">
+              <GlobePanel stop={stop} size="min(100%, 42vh)" />
             </div>
           )}
-        </div>
+          {journey.map((p, n) => (
+            <PortStop key={p.id} p={p} n={n} active={stop === p.id} onOpen={(x) => openProject(x, false)} />
+          ))}
+          <article data-stop="network" data-nav="journey" className={`reveal min-h-[70vh] py-12 transition-opacity duration-500 ${stop === 'network' ? '' : 'lg:opacity-40'}`}>
+            <p className="font-mono text-xs uppercase tracking-widest text-accent">{String(journey.length + 1).padStart(2, '0')} · Network</p>
+            <h3 className="mt-3 text-3xl font-semibold text-head">JSW Infrastructure</h3>
+            <p className="mt-1 text-sm">Ten port concessions in India, plus Fujairah and Dibba in the UAE.</p>
+            <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-ink/70">
+              {network.map((p) => (
+                <li key={p.name}>{p.name}</li>
+              ))}
+            </ul>
+          </article>
+        </section>
 
-        {/* Code Area */}
-        <div className="flex-1 relative bg-gray-900 overflow-auto">
-          {activeTab && (
-            <div className="absolute inset-0">
-              {activeTab === 'resume.pdf' && pdfData ? (
-                <div className="w-full h-full flex items-center justify-center bg-gray-900">
-                  <iframe
-                    src={URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }))}
-                    className="w-full h-full"
-                    title="Resume PDF"
+        <section id="work" data-stop="network" data-nav="work" className="mt-24 scroll-mt-16">
+          <h2 className="label">Work</h2>
+          <ul className="grid gap-6 sm:grid-cols-2">
+            {projects.map((p) => (
+              <li key={p.id} className="reveal">
+                <button onClick={() => openProject(p)} className="group w-full text-left">
+                  <Thumb
+                    project={p}
+                    style={{ viewTransitionName: selected === p.id && open?.id !== p.id ? `p-${p.id}` : undefined }}
                   />
-                </div>
-              ) : (
-                <pre className="font-mono text-sm">
-                  <code className="block p-4">
-                    {openTabs
-                      .find(tab => tab.id === activeTab)
-                      ?.content.split('\n')
-                      .map((line, index) => (
-                        <div key={index} className="group flex min-w-0">
-                          <div className="flex-none">
-                            {renderLineNumber(index)}
-                          </div>
-                          <div className="flex-1 pl-4 break-words whitespace-pre-wrap py-0.5 
-                            overflow-x-auto">
-                            {renderLineWithHighlighting(line)}
-                          </div>
-                        </div>
-                      ))}
-                  </code>
-                </pre>
-              )}
-            </div>
-          )}
-        </div>
+                  <h3 className="mt-3 font-medium text-head transition-colors group-hover:text-accent">{p.name} →</h3>
+                  <p className="mt-1 text-sm">{p.summary}</p>
+                  <Stats items={p.stats} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-        {/* Status Bar */}
-        <div className="h-6 flex-none bg-gray-800 px-4 py-1 text-xs md:text-sm flex 
-          justify-between border-t border-gray-700">
-          <div>Open Files: {openTabs.length}</div>
-          <div className="truncate">Portfolio</div>
-        </div>
+        <section id="contact" data-stop="network" data-nav="contact" className="mt-32 min-h-[50vh] scroll-mt-16 pb-24">
+          <h2 className="label">Contact</h2>
+          <p className="max-w-prose text-lg">Email is the quickest way to reach me.</p>
+          <a href={`mailto:${profile.email}`} className="mt-4 inline-block font-mono text-accent hover:underline">
+            {profile.email}
+          </a>
+        </section>
       </main>
-    </div>
-  </div>
-);
-};
 
-export default Portfolio;
+      {open && <Viewer project={open} onClose={close} />}
+    </div>
+  )
+}

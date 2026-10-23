@@ -50,3 +50,7 @@ contacts.db
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Raw company footage, never commit
+*.mp4
+!public/projects/**/*.mp4

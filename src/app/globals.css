@@ -3,19 +3,94 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: 11 17 28;
+  --panel: 17 26 42;
+  --line: 30 42 61;
+  --ink: 148 163 184;
+  --head: 226 232 240;
+  --accent: 255 176 32;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: rgb(var(--bg));
+  color: rgb(var(--ink));
+}
+
+::selection {
+  background: rgb(var(--accent) / 0.3);
+  color: rgb(var(--head));
+}
+
+.label {
+  @apply mb-8 font-mono text-xs uppercase tracking-widest text-head;
+}
+
+/* Dot-matrix placeholder, same language as the globe. */
+.dots {
+  background-image: radial-gradient(rgb(var(--line)) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+.viewer::backdrop {
+  background: rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(4px);
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ponytail: CSS scroll-driven reveal; browsers without it just show content. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Soft round edge so a zoomed-in globe reads as a lens, not a clipped square. */
+.lens {
+  mask-image: radial-gradient(circle closest-side, #000 82%, transparent 100%);
+}
+
+.carousel-btn {
+  @apply absolute top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-head transition-colors hover:bg-accent hover:text-bg;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade {
+    animation: fade 0.35s ease-out;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
 }
