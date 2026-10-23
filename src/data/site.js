@@ -88,6 +88,7 @@ export const network = [
 ]
 
 // ports: journey ids where the project runs ('network' = the JSW Infrastructure stop); listed under them on the route.
+// sites: where a JSW-wide project is running, shown as chips.
 // stats: short proof lines shown in accent. portStats / portMedia: per-port overrides shown when opened from that port.
 // media: files in /public/projects/<id>/ — images (.png/.jpg/.webp) or videos (.mp4/.webm).
 // e.g. media: ['/projects/weighbridge/1.png', '/projects/weighbridge/demo.mp4']
@@ -229,11 +230,43 @@ export const projects = [
     ],
   },
   {
+    id: 'smart-canteen',
+    name: 'Smart Canteen',
+    ports: ['jaigarh'],
+    summary: 'Replaced printed meal tokens with QR codes. People scan at the canteen to log their meal, a voice announces their name, and daily meal-log alerts keep it transparent.',
+    stats: [],
+    stack: ['QR', 'Text-to-speech'],
+    media: ['/projects/smart-canteen/01.webp'],
+  },
+  {
+    id: 'jaigarh-ems',
+    name: 'Jaigarh Energy Monitoring System',
+    ports: ['jaigarh'],
+    summary: 'The same idea as Mangalore, built on Siemens PLCs: energy data read straight off the PLCs over S7.',
+    stats: [],
+    stack: ['Siemens S7', 'PLC'],
+    // TODO(shubham): screenshots to come.
+    media: [],
+  },
+  {
+    id: 'mangalore-ems',
+    name: 'Mangalore Energy Monitoring System',
+    ports: ['mangalore'],
+    summary: 'Where I learned to read energy meters through Moxa gateways. Readings stream through Kafka and Spark into a landing zone and PostgreSQL, and show on a live dashboard.',
+    stats: [],
+    stack: ['Moxa', 'Kafka', 'Spark', 'PostgreSQL'],
+    media: [
+      '/projects/mangalore-ems/01.webp',
+      '/projects/mangalore-ems/02.webp',
+    ],
+  },
+  {
     id: 'digital-logbook',
     name: 'Digital Logbook',
     ports: ['network'],
     summary: 'Turns paper registers into digital ones. Built on an EAV model, so new forms are configured rather than coded, with approval workflows and role-based access.',
     stats: ['30+ processes digitized'],
+    sites: ['DPPL', 'SWPL', 'JPL', 'JNPA', 'Keni', 'Mangalore Coal', 'Mangalore Container'],
     stack: ['EAV', 'RBAC', 'Workflows'],
     media: [
       '/projects/digital-logbook/01.webp',
@@ -245,9 +278,13 @@ export const projects = [
     ports: ['network'],
     summary: 'Linked to the punch-in system to show headcount at every site in real time, with overstay alerts and overstay reports.',
     stats: [],
+    sites: ['DPPL', 'SWPL', 'JPL', 'JNPA', 'Keni', 'Mangalore Coal', 'Mangalore Container'],
     stack: [],
-    // TODO(shubham): screenshots to come.
-    media: [],
+    // Names, IDs and the signed-in email are blurred in these screens.
+    media: [
+      '/projects/headcount-dashboard/01.webp',
+      '/projects/headcount-dashboard/02.webp',
+    ],
   },
   {
     id: 'weighbridge',
@@ -261,8 +298,8 @@ export const projects = [
   {
     id: 'anpr-speed',
     name: 'Vehicle Speed Detection',
-    summary: 'Number-plate based speed checks on port roads, with a live violations dashboard.',
-    stack: ['YOLOv8', 'Flask', 'Chart.js'],
+    summary: 'Speed checks on port roads: YOLO26 spots vehicles, an ANPR model running on ONNX reads the plates, and violations go to a live dashboard and reports.',
+    stack: ['YOLO26', 'ANPR', 'ONNX', 'Flask', 'Chart.js'],
     media: [
       '/projects/anpr-speed/01.webp',
       '/projects/anpr-speed/02.webp',

@@ -150,6 +150,7 @@ function Viewer({ project, onClose }) {
         </div>
         <p className="mt-2 max-w-prose">{project.summary}</p>
         <Stats items={project.stats} />
+        <Sites items={project.sites} />
         <Stack items={project.stack} />
         {project.media.length > 1 && (
           <div className="mt-6 flex gap-3 overflow-x-auto">
@@ -181,6 +182,21 @@ function Stats({ items = [] }) {
   )
 }
 
+// Sites a JSW-wide project runs at.
+function Sites({ items }) {
+  if (!items?.length) return null
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+      <span className="mr-1 font-mono text-[11px] uppercase tracking-widest text-ink/60">Live at</span>
+      {items.map((x) => (
+        <span key={x} className="rounded border border-line px-2 py-0.5 font-mono text-[11px] text-head">
+          {x}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function Stack({ items }) {
   return (
     <ul className="mt-4 flex flex-wrap gap-2">
@@ -204,6 +220,7 @@ function Built({ at, onOpen }) {
           <p className="font-medium text-head">{x.name}</p>
           <p className="mt-1 max-w-prose text-sm leading-relaxed">{x.summary}</p>
           <Stats items={x.portStats?.[at] ?? x.stats} />
+          <Sites items={x.sites} />
           <button
             onClick={() => onOpen({ ...x, media: x.portMedia?.[at] ?? x.media, stats: x.portStats?.[at] ?? x.stats })}
             className="mt-2 font-mono text-xs uppercase tracking-widest text-accent hover:underline">
@@ -369,6 +386,7 @@ export default function Portfolio() {
                   <h3 className="mt-3 font-medium text-head transition-colors group-hover:text-accent">{p.name} →</h3>
                   <p className="mt-1 text-sm">{p.summary}</p>
                   <Stats items={p.stats} />
+                  <Sites items={p.sites} />
                 </button>
               </li>
             ))}
