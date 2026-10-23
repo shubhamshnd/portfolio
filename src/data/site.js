@@ -110,7 +110,9 @@ export const projects = [
       jnpa: ['₹1.5 crore licensing avoided', '₹10 lakh / year maintenance avoided'],
     },
     stack: ['Python', 'PostgreSQL', 'SAP API', 'GST API', 'Azure Data Lake', 'Entra ID'],
+    // First item plays in the viewer; JNPA uses its own screens below.
     media: [
+      'https://youtu.be/BC4qWmioQ4s',
       '/projects/portbird/02-home.webp',
       '/projects/portbird/03-vcn01.webp',
       '/projects/portbird/04-mbc01.webp',
@@ -198,9 +200,9 @@ export const projects = [
     summary: "One live view of every JSW Infrastructure port and terminal. Pick a port on the map to see today's discharge, berths, cargo mix, delays, tides and the barge fleet.",
     stats: [],
     stack: [],
-    // A YouTube link here plays in the viewer. The demo video (https://youtu.be/DTitukTEaww) is left
-    // out because it shows live values unblurred.
+    // A YouTube link plays in the viewer; its thumbnail becomes the card cover.
     media: [
+      'https://youtu.be/DTitukTEaww',
       '/projects/central-dashboard/01.webp',
       '/projects/central-dashboard/02.webp',
       '/projects/central-dashboard/03.webp',
@@ -275,6 +277,7 @@ export const projects = [
     sites: ['DPPL', 'SWPL', 'JPL', 'JNPA', 'Keni', 'Mangalore Coal', 'Mangalore Container'],
     stack: ['EAV', 'RBAC', 'Workflows'],
     media: [
+      'https://youtu.be/K5eaKjdn3os',
       '/projects/digital-logbook/01.webp',
     ],
   },
