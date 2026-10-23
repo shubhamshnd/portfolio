@@ -338,6 +338,18 @@ export default function Portfolio() {
         <section id="about" data-stop="about" data-nav="about" className="scroll-mt-16 lg:min-h-[60vh]">
           <h2 className="label">About</h2>
           <p className="max-w-prose text-2xl font-medium leading-snug text-head sm:text-3xl">{profile.lead}</p>
+          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 font-mono text-xs sm:grid-cols-[2fr_1fr_1fr]">
+            {[
+              ['Now', `${profile.role}, ${profile.company}`],
+              ['Experience', profile.experience],
+              ['Based in', profile.location],
+            ].map(([k, v]) => (
+              <div key={k} className={k === 'Now' ? 'col-span-2 sm:col-span-1' : ''}>
+                <dt className="uppercase tracking-widest text-ink/60">{k}</dt>
+                <dd className="mt-1 text-head">{v}</dd>
+              </div>
+            ))}
+          </dl>
           {profile.intro.map((t) => (
             <p key={t} className="mt-5 max-w-prose leading-relaxed">
               {t}
@@ -352,7 +364,21 @@ export default function Portfolio() {
               </div>
             ))}
           </dl>
-          <p className="mt-6 font-mono text-xs text-ink/60">Scroll to follow the route ↓</p>
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-mono text-sm">
+            <li>
+              <a href={`mailto:${profile.email}`} className="text-accent hover:underline">
+                {profile.email}
+              </a>
+            </li>
+            {profile.links.map((l) => (
+              <li key={l.label}>
+                <a href={l.href} target="_blank" rel="noreferrer" className="hover:text-accent">
+                  {l.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-8 font-mono text-xs text-ink/60">Scroll to follow the route ↓</p>
         </section>
 
         <section id="journey" className="mt-24 scroll-mt-16">

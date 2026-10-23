@@ -54,3 +54,6 @@ contacts.db
 # Raw company footage, never commit
 *.mp4
 !public/projects/**/*.mp4
+
+# Raw screenshots (unredacted). Only blurred copies in public/projects are published.
+/images/

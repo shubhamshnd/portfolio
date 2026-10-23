@@ -5,7 +5,13 @@ export const profile = {
   title: 'Digital & AI Solution Architect',
   domains: 'Ports · Supply Chain · Manufacturing',
   lead: 'I build software for ports, plants and supply chains.',
+  // Shown as a facts row at the top of About.
+  role: 'Assistant Manager, Digital Solutions Engineer',
+  company: 'JSW Infrastructure',
+  experience: '3+ years',
+  location: 'Navi Mumbai, India',
   intro: [
+    "I'm an Assistant Manager and Digital Solutions Engineer at JSW Infrastructure, where I've spent the last three years building the systems our ports run on.",
     "I like to start on the ground. I sit with the people doing the work, see where their time goes, and find the spreadsheets and reports nobody enjoys making. Then I design something better and build it myself.",
     "Most of what I make is data pipelines, ERP and SAP integrations, dashboards and, more and more, AI tools that answer questions from operations data. I'm also doing a PGPM at IIM Mumbai, so I can think about the business side as much as the tech.",
   ],
@@ -192,9 +198,9 @@ export const projects = [
     summary: "One live view of every JSW Infrastructure port and terminal. Pick a port on the map to see today's discharge, berths, cargo mix, delays, tides and the barge fleet.",
     stats: [],
     stack: [],
-    // A YouTube link plays in the viewer; its thumbnail becomes the card cover.
+    // A YouTube link here plays in the viewer. The demo video (https://youtu.be/DTitukTEaww) is left
+    // out because it shows live values unblurred.
     media: [
-      'https://youtu.be/DTitukTEaww',
       '/projects/central-dashboard/01.webp',
       '/projects/central-dashboard/02.webp',
       '/projects/central-dashboard/03.webp',
