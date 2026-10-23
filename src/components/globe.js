@@ -20,10 +20,12 @@ function view(stop) {
   return { at: INDIA, scale: 1.05, step: -1, spin: true }
 }
 
-export default function Globe({ stop }) {
+// shift: fraction of the canvas width to move the focused spot left of centre
+// (on phones the globe sits half off-screen, so the port has to land in the visible half).
+export default function Globe({ stop, shift = 0, className = '' }) {
   const canvas = useRef(null)
-  const target = useRef(view(stop))
-  target.current = view(stop)
+  const target = useRef(null)
+  target.current = { ...view(stop), shift }
 
   useEffect(() => {
     const el = canvas.current
@@ -33,9 +35,12 @@ export default function Globe({ stop }) {
     const cur = { phi: phi0, theta: theta0, scale: still ? 1.05 : 0.7, bright: still ? 1 : 0 }
     let size = el.offsetWidth
     let raf
+    let last = 0
+    let arcStep = null
 
     const globe = createGlobe(el, {
-      devicePixelRatio: Math.min(window.devicePixelRatio, 2),
+      // ponytail: phones get fewer pixels; the dots are big enough that nobody sees the difference.
+      devicePixelRatio: Math.min(window.devicePixelRatio, size < 500 ? 1.5 : 2),
       width: size,
       height: size,
       phi: cur.phi,
@@ -53,6 +58,10 @@ export default function Globe({ stop }) {
       markerElevation: 0,
       markers: [],
     })
+    // cobe rewrites a <style> in <head> every frame for marker labels we don't use, which forces a
+    // whole-page style recalc per frame. Detached, those writes cost nothing.
+    const cobeStyle = document.head.lastElementChild
+    if (cobeStyle?.tagName === 'STYLE' && /^(:root\{\})?$/.test(cobeStyle.textContent)) cobeStyle.remove()
 
     const onResize = () => {
       size = el.offsetWidth
@@ -60,12 +69,19 @@ export default function Globe({ stop }) {
     }
     window.addEventListener('resize', onResize)
 
-    const ease = still ? 1 : 0.06
     const tick = (t) => {
-      const { at, scale, step, spin, sway } = target.current
-      const [phi, theta] = toAngles(at)
+      // ponytail: phones draw the globe at ~30 fps; it moves slowly, and it leaves the CPU for scrolling.
+      if (size < 500 && t - last < 30) return (raf = requestAnimationFrame(tick))
+      // Ease by elapsed time, not frames, so 30, 60 and 120 Hz all move the same.
+      const f = Math.min((t - (last || t)) / 16.7, 4)
+      last = t
+      const ease = still ? 1 : 1 - Math.pow(0.94, f)
+      const { at, scale, step, spin, sway, shift } = target.current
+      let [phi, theta] = toAngles(at)
+      // Globe radius is ~0.4 of the canvas per unit of scale; rotate so the spot lands `shift` left of centre.
+      if (shift) phi -= Math.asin(Math.min(shift / (0.4 * cur.scale), 0.9))
       if (spin) {
-        if (!still) cur.phi += 0.002
+        if (!still) cur.phi += 0.002 * f
       } else {
         // Ease to the stop the shortest way round, with a slow drift so the globe never looks frozen.
         const d = phi + (still ? 0 : Math.sin(t / 3000) * sway) - cur.phi
@@ -73,7 +89,7 @@ export default function Globe({ stop }) {
       }
       cur.theta += (theta - cur.theta) * ease
       cur.scale += (scale - cur.scale) * ease
-      cur.bright += (1 - cur.bright) * (still ? 1 : 0.025)
+      cur.bright += (1 - cur.bright) * (still ? 1 : 1 - Math.pow(0.975, f))
 
       // Markers scale with the globe, so shrink them as we zoom in.
       const k = 2.2 / Math.max(cur.scale, 1.6)
@@ -87,19 +103,14 @@ export default function Globe({ stop }) {
         })),
         ...network.map((p) => ({ location: p.location, size: (all ? 0.04 : 0.02) * k, color: all ? AMBER : DIM })),
       ]
-      // Arcs trace the route travelled so far.
-      const arcs = journey.slice(1, step + 1).map((p, i) => ({ from: journey[i].location, to: p.location }))
-      if (all) network.forEach((p) => arcs.push({ from: HUB, to: p.location }))
-
-      globe.update({
-        phi: cur.phi,
-        theta: cur.theta,
-        scale: cur.scale,
-        mapBrightness: 7 * cur.bright,
-        opacity: cur.bright,
-        markers,
-        arcs,
-      })
+      const next = { phi: cur.phi, theta: cur.theta, scale: cur.scale, mapBrightness: 7 * cur.bright, opacity: cur.bright, markers }
+      // Arcs trace the route travelled so far; only re-upload them when the stop changes.
+      if (step !== arcStep) {
+        arcStep = step
+        next.arcs = journey.slice(1, step + 1).map((p, i) => ({ from: journey[i].location, to: p.location }))
+        if (all) network.forEach((p) => next.arcs.push({ from: HUB, to: p.location }))
+      }
+      globe.update(next)
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
@@ -111,5 +122,5 @@ export default function Globe({ stop }) {
     }
   }, [])
 
-  return <canvas ref={canvas} className="lens aspect-square w-full" aria-hidden="true" />
+  return <canvas ref={canvas} className={`lens aspect-square w-full ${className}`} aria-hidden="true" />
 }

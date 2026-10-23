@@ -17,6 +17,8 @@ html {
 }
 
 body {
+  /* The phone globe hangs off the right edge; never let it cause sideways scroll. */
+  overflow-x: clip;
   background: rgb(var(--bg));
   color: rgb(var(--ink));
 }
@@ -93,4 +95,20 @@ html:has(dialog[open]) {
   from {
     opacity: 0;
   }
+}
+
+/* Phones: globe pinned to the right edge, half off-screen, behind the text. */
+.side-globe {
+  position: fixed;
+  z-index: 0;
+  top: 50%;
+  right: -45vw;
+  width: 90vw;
+  translate: 0 -50%;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.side-globe--dim {
+  opacity: 0.18;
 }

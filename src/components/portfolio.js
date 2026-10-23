@@ -80,18 +80,26 @@ function Viewer({ project, onClose }) {
   const n = project.media.length
   const src = project.media[i]
   const go = (d) => setI((x) => (x + d + n) % n)
+  const touch = useRef(0)
 
   return (
     <dialog
       ref={ref}
-      className="viewer m-auto w-[min(1000px,calc(100vw-2rem))] rounded-lg border border-line bg-bg p-0 text-ink"
+      className="viewer m-auto w-[min(1000px,calc(100vw-1rem))] rounded-lg border border-line bg-bg p-0 text-ink"
       onCancel={(e) => (e.preventDefault(), onClose())}
       onClick={(e) => e.target === ref.current && onClose()}
       onKeyDown={(e) => n > 1 && (e.key === 'ArrowRight' ? go(1) : e.key === 'ArrowLeft' && go(-1))}
     >
       <div style={{ viewTransitionName: `p-${project.id}` }}>
         {src ? (
-          <div className="relative aspect-[16/7] bg-black">
+          <div
+            className="relative aspect-[4/3] bg-black sm:aspect-[16/7]"
+            onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
+            onTouchEnd={(e) => {
+              const dx = e.changedTouches[0].clientX - touch.current
+              if (n > 1 && Math.abs(dx) > 40) go(dx < 0 ? 1 : -1)
+            }}
+          >
             <div className="fade h-full" key={src}>
               <Media src={src} alt={`${project.name} screen ${i + 1}`} controls fit="object-contain" />
             </div>
@@ -167,13 +175,13 @@ function PortStop({ p, n, active, onOpen }) {
     <article
       data-stop={p.id}
       data-nav="journey"
-      className={`reveal min-h-[70vh] py-12 transition-opacity duration-500 lg:min-h-[80vh] ${active ? '' : 'lg:opacity-40'}`}
+      className={`reveal min-h-[70vh] py-12 pr-[34vw] transition-opacity duration-500 lg:min-h-[80vh] lg:pr-0 ${active ? '' : 'lg:opacity-40'}`}
     >
       <p className="font-mono text-xs uppercase tracking-widest text-accent">
         {String(n + 1).padStart(2, '0')}
         {p.when && ` · ${p.when}`}
       </p>
-      <h3 className="mt-3 text-3xl font-semibold text-head">{p.port}</h3>
+      <h3 className="mt-3 text-2xl font-semibold text-head sm:text-3xl">{p.port}</h3>
       <p className="mt-1 text-sm">{p.place}</p>
       <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-ink/70">
         {p.facts.map((f) => (
@@ -233,7 +241,10 @@ export default function Portfolio() {
 
   return (
     <div className="mx-auto max-w-screen-xl px-6 md:px-12 lg:flex lg:justify-between lg:gap-12 lg:px-20">
-      <header className="pt-16 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-1/2 lg:flex-col lg:py-12">
+      <header
+        {...(desktop === false && { 'data-stop': 'about', 'data-nav': 'top' })}
+        className="relative z-10 flex min-h-[72svh] flex-col pb-10 pt-16 lg:sticky lg:top-0 lg:h-screen lg:min-h-0 lg:w-1/2 lg:pb-12 lg:pt-12"
+      >
         <h1 className="text-4xl font-bold tracking-tight text-head sm:text-5xl">{profile.name}</h1>
         <h2 className="mt-3 text-lg font-medium text-head">{profile.title}</h2>
         <p className="mt-1 font-mono text-sm text-accent">{profile.domains}</p>
@@ -254,13 +265,10 @@ export default function Portfolio() {
           </ul>
         </nav>
 
-        {desktop && (
-          <div className="flex min-h-0 flex-1 items-center">
-            <GlobePanel stop={stop} />
-          </div>
-        )}
+        {/* Slot is always there so the page doesn't jump when the globe mounts. */}
+        <div className="hidden min-h-0 flex-1 items-center lg:flex">{desktop && <GlobePanel stop={stop} />}</div>
 
-        <ul className="mt-8 flex gap-6 font-mono text-sm lg:mt-0">
+        <ul className="mt-auto flex gap-6 font-mono text-sm lg:mt-0">
           {profile.links.map((l) => (
             <li key={l.label}>
               <a href={l.href} target="_blank" rel="noreferrer" className="hover:text-accent">
@@ -271,7 +279,14 @@ export default function Portfolio() {
         </ul>
       </header>
 
-      <main className="pt-16 lg:w-1/2 lg:py-24">
+      {/* Phones: one globe pinned half off the right edge; text runs beside it. */}
+      {desktop === false && (
+        <div className={`side-globe ${nav === 'top' || nav === 'journey' ? '' : 'side-globe--dim'}`} aria-hidden="true">
+          <Globe stop={stop} shift={0.24} />
+        </div>
+      )}
+
+      <main className="relative z-10 lg:w-1/2 lg:py-24">
         <section id="about" data-stop="about" data-nav="about" className="scroll-mt-16 lg:min-h-[60vh]">
           <h2 className="label">About</h2>
           <p className="max-w-prose text-2xl font-medium leading-snug text-head sm:text-3xl">{profile.lead}</p>
@@ -294,17 +309,12 @@ export default function Portfolio() {
 
         <section id="journey" className="mt-24 scroll-mt-16">
           <h2 className="label">Journey</h2>
-          {desktop === false && (
-            <div className="sticky top-0 z-10 -mx-6 bg-bg/90 px-6 py-2 backdrop-blur md:-mx-12 md:px-12">
-              <GlobePanel stop={stop} size="min(100%, 42vh)" />
-            </div>
-          )}
           {journey.map((p, n) => (
             <PortStop key={p.id} p={p} n={n} active={stop === p.id} onOpen={(x) => openProject(x, false)} />
           ))}
-          <article data-stop="network" data-nav="journey" className={`reveal min-h-[70vh] py-12 transition-opacity duration-500 ${stop === 'network' ? '' : 'lg:opacity-40'}`}>
+          <article data-stop="network" data-nav="journey" className={`reveal min-h-[70vh] py-12 pr-[34vw] transition-opacity duration-500 lg:pr-0 ${stop === 'network' ? '' : 'lg:opacity-40'}`}>
             <p className="font-mono text-xs uppercase tracking-widest text-accent">{String(journey.length + 1).padStart(2, '0')} · Network</p>
-            <h3 className="mt-3 text-3xl font-semibold text-head">JSW Infrastructure</h3>
+            <h3 className="mt-3 text-2xl font-semibold text-head sm:text-3xl">JSW Infrastructure</h3>
             <p className="mt-1 text-sm">Ten port concessions in India, plus Fujairah and Dibba in the UAE.</p>
             <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-ink/70">
               {network.map((p) => (
