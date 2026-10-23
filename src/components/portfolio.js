@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import Globe from '@/components/globe'
+import Backdrop from '@/components/backdrop'
 import { profile, journey, network, projects } from '@/data/site'
 
 const NAV = [
@@ -241,6 +242,7 @@ export default function Portfolio() {
 
   return (
     <div className="mx-auto max-w-screen-xl px-6 md:px-12 lg:flex lg:justify-between lg:gap-12 lg:px-20">
+      <Backdrop />
       <header
         {...(desktop === false && { 'data-stop': 'about', 'data-nav': 'top' })}
         className="relative z-10 flex min-h-[72svh] flex-col pb-10 pt-16 lg:sticky lg:top-0 lg:h-screen lg:min-h-0 lg:w-1/2 lg:pb-12 lg:pt-12"

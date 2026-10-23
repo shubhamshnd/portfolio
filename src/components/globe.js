@@ -62,7 +62,8 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     const grid10 = geoGraticule().step([10, 10])()
     const grid1 = geoGraticule().step([1, 1]).extent([[50, 0], [95, 35]])()
     const cam = { lon: INDIA[1], lat: INDIA[0], z: still ? 1 : 0.75, shift: 0 }
-    const state = { step: -1, spin: true, alpha: still ? 1 : 0 }
+    // boost: extra spin speed (°/ms) that decays away; the opening spin uses it to whirl in and settle on India.
+    const state = { step: -1, spin: true, alpha: still ? 1 : 0, boost: 0, shift: 0, intro: !still }
     let w = 0, dpr = 1, lo = null, hi = null
     let anim = null, raf = 0, last = 0, drawn = 0, dead = false
 
@@ -198,7 +199,11 @@ export default function Globe({ stop, shift = 0, className = '' }) {
         if (e < 1) more = true
         else anim = null
       } else if (state.spin && !still) {
-        cam.lon += dt * 0.004
+        cam.lon += dt * (0.008 + state.boost)
+        state.boost *= Math.exp(-dt / 700)
+        const k = 1 - Math.exp(-dt / 400)
+        cam.z += (1 - cam.z) * k
+        cam.shift += (state.shift - cam.shift) * k
         more = true
       }
       if (state.step >= 1 && !still) more = true // arcs on screen: keep the pulses moving
@@ -212,6 +217,16 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     const go = (v, sh) => {
       state.step = v.step
       state.spin = !!v.spin
+      state.shift = sh
+      // First load: start ~270° east of India and let the decaying boost whirl it round onto India.
+      if (state.intro && v.spin) {
+        state.intro = false
+        cam.lon = INDIA[1] - 270
+        state.boost = 270 / 700
+        kick()
+        return
+      }
+      state.intro = false
       if (v.z > 2.2 && !hi) loadLand('50m').then((f) => { hi = f; draw() })
       const from = [cam.lon, cam.lat], to = ll(v.at)
       if (still) { cam.lon = to[0]; cam.lat = to[1]; cam.z = v.z; cam.shift = sh; draw(); return }

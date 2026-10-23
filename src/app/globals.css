@@ -112,3 +112,42 @@ html:has(dialog[open]) {
 .side-globe--dim {
   opacity: 0.18;
 }
+
+/* Page background: chart grid (drifts with scroll), cursor glow, grid lit around the cursor. */
+.backdrop {
+  --mx: 70vw;
+  --my: 30vh;
+  --gy: 0px;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.backdrop-grid {
+  position: absolute;
+  inset: 0 0 auto;
+  height: calc(100% + 64px);
+  --line: rgb(125 162 209 / 0.045);
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  will-change: transform;
+}
+
+.backdrop-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  --line: rgb(125 162 209 / 0.22);
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(280px circle at var(--mx) calc(var(--my) + var(--gy)), #000, transparent 70%);
+  mask-image: radial-gradient(280px circle at var(--mx) calc(var(--my) + var(--gy)), #000, transparent 70%);
+}
+
+.backdrop-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(640px circle at var(--mx) var(--my), rgb(37 84 160 / 0.14), transparent 75%);
+}
