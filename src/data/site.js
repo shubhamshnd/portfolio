@@ -307,13 +307,6 @@ export const projects = [
     ],
   },
   {
-    id: 'headcount',
-    name: 'Manpower Headcount',
-    summary: 'Real-time people count from RTSP cameras.',
-    stack: ['YOLOv4-tiny', 'OpenCV', 'Express', 'SQL Server'],
-    media: [],
-  },
-  {
     id: 'gate-permit',
     name: 'Vehicle Gatepass System',
     ports: ['jaigarh'],
