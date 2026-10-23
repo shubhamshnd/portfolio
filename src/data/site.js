@@ -87,7 +87,7 @@ export const network = [
   { name: 'Dibba', location: [25.62, 56.27] },
 ]
 
-// ports: journey ids where the project runs; it is listed under those ports on the globe route.
+// ports: journey ids where the project runs ('network' = the JSW Infrastructure stop); listed under them on the route.
 // stats: short proof lines shown in accent. portStats / portMedia: per-port overrides shown when opened from that port.
 // media: files in /public/projects/<id>/ — images (.png/.jpg/.webp) or videos (.mp4/.webm).
 // e.g. media: ['/projects/weighbridge/1.png', '/projects/weighbridge/demo.mp4']
@@ -185,18 +185,88 @@ export const projects = [
     ],
   },
   {
+    id: 'central-dashboard',
+    name: 'Centralized Dashboard',
+    ports: ['network'],
+    summary: "One live view of every JSW Infrastructure port and terminal. Pick a port on the map to see today's discharge, berths, cargo mix, delays, tides and the barge fleet.",
+    stats: [],
+    stack: [],
+    // A YouTube link plays in the viewer; its thumbnail becomes the card cover.
+    media: [
+      'https://youtu.be/DTitukTEaww',
+      '/projects/central-dashboard/01.webp',
+      '/projects/central-dashboard/02.webp',
+      '/projects/central-dashboard/03.webp',
+      '/projects/central-dashboard/04.webp',
+    ],
+  },
+  {
+    id: 'jaigarh-ops',
+    name: 'Jaigarh Operations Dashboard',
+    ports: ['jaigarh'],
+    summary: 'Live operations for Jaigarh: berth and anchorage status, cargo against targets, truck and vessel turnaround, yard stock, weather and tides.',
+    stats: [],
+    stack: [],
+    media: [
+      '/projects/jaigarh-ops/01.webp',
+      '/projects/jaigarh-ops/02.webp',
+      '/projects/jaigarh-ops/03.webp',
+      '/projects/jaigarh-ops/04.webp',
+      '/projects/jaigarh-ops/05.webp',
+    ],
+  },
+  {
+    id: 'swpl-ops',
+    name: 'SWPL Operations Dashboard',
+    ports: ['swpl'],
+    summary: 'Cargo, rake and vessel tracking for South West Port: stock by product, live rake loading, berth-wise discharge and dispatch, turnaround and demurrage.',
+    stats: [],
+    stack: [],
+    media: [
+      '/projects/swpl-ops/01.webp',
+      '/projects/swpl-ops/02.webp',
+      '/projects/swpl-ops/03.webp',
+    ],
+  },
+  {
+    id: 'digital-logbook',
+    name: 'Digital Logbook',
+    ports: ['network'],
+    summary: 'Turns paper registers into digital ones. Built on an EAV model, so new forms are configured rather than coded, with approval workflows and role-based access.',
+    stats: ['30+ processes digitized'],
+    stack: ['EAV', 'RBAC', 'Workflows'],
+    media: [
+      '/projects/digital-logbook/01.webp',
+    ],
+  },
+  {
+    id: 'headcount-dashboard',
+    name: 'Headcount Dashboard',
+    ports: ['network'],
+    summary: 'Linked to the punch-in system to show headcount at every site in real time, with overstay alerts and overstay reports.',
+    stats: [],
+    stack: [],
+    // TODO(shubham): screenshots to come.
+    media: [],
+  },
+  {
     id: 'weighbridge',
     name: 'Weighbridge Management System',
     summary: 'Captures cargo weights straight from the weighbridge instead of typed entries.',
     stack: ['Electron', 'IoT', 'REST API'],
-    media: [],
+    media: [
+      '/projects/weighbridge/01.webp',
+    ],
   },
   {
     id: 'anpr-speed',
     name: 'Vehicle Speed Detection',
     summary: 'Number-plate based speed checks on port roads, with a live violations dashboard.',
     stack: ['YOLOv8', 'Flask', 'Chart.js'],
-    media: [],
+    media: [
+      '/projects/anpr-speed/01.webp',
+      '/projects/anpr-speed/02.webp',
+    ],
   },
   {
     id: 'headcount',
@@ -210,27 +280,6 @@ export const projects = [
     name: 'Vehicle Gate Permits',
     summary: 'Replaced paper gate passes for employee vehicles.',
     stack: ['Django', 'SQLite'],
-    media: [],
-  },
-  {
-    id: 'barge-docs',
-    name: 'Barge Compliance Documents',
-    summary: 'Keeps statutory documents for barge operations in one place.',
-    stack: ['PHP'],
-    media: [],
-  },
-  {
-    id: 'vendor-search',
-    name: 'Vendor Search',
-    summary: 'Vendor lookup and comparison on top of SAP data.',
-    stack: ['Django', 'SAP FICO', 'Chart.js'],
-    media: [],
-  },
-  {
-    id: 'imailman',
-    name: 'iMailMan',
-    summary: 'One SMTP service for all internal apps, with delivery tracking.',
-    stack: ['Flask', 'SMTP'],
     media: [],
   },
 ]

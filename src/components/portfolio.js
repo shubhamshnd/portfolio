@@ -53,8 +53,31 @@ function GlobePanel({ stop, size = 'min(760px, calc(100vh - 330px), 100%)' }) {
   )
 }
 
+const youtubeId = (src) => src.match(/(?:youtu\.be\/|[?&]v=|embed\/)([\w-]{11})/)?.[1]
+
 function Media({ src, alt, controls, fit = 'object-cover object-top' }) {
   const cls = `h-full w-full ${fit}`
+  const yt = youtubeId(src)
+  // YouTube: the player in the viewer, its thumbnail with a play badge everywhere else.
+  if (yt && controls)
+    return (
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${yt}?rel=0`}
+        title={alt}
+        className="h-full w-full"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        allowFullScreen
+      />
+    )
+  if (yt)
+    return (
+      <span className="relative block h-full w-full">
+        <img src={`https://i.ytimg.com/vi/${yt}/hqdefault.jpg`} alt={alt} className="h-full w-full object-cover" loading="lazy" />
+        <span className="absolute inset-0 grid place-items-center">
+          <span className="grid aspect-square h-1/3 max-h-12 place-items-center rounded-full bg-black/70 text-head">▶</span>
+        </span>
+      </span>
+    )
   if (isVideo(src)) return <video src={src} className={cls} muted loop playsInline autoPlay={controls} controls={controls} preload="metadata" />
   return <img src={src} alt={alt} className={cls} loading="lazy" />
 }
@@ -170,8 +193,29 @@ function Stack({ items }) {
   )
 }
 
+// Projects that ran at a stop; each opens the viewer with that stop's own screens and numbers.
+function Built({ at, onOpen }) {
+  const built = projects.filter((x) => x.ports?.includes(at))
+  if (!built.length) return null
+  return (
+    <ul className="mt-8 space-y-6 border-l border-line pl-5">
+      {built.map((x) => (
+        <li key={x.id}>
+          <p className="font-medium text-head">{x.name}</p>
+          <p className="mt-1 max-w-prose text-sm leading-relaxed">{x.summary}</p>
+          <Stats items={x.portStats?.[at] ?? x.stats} />
+          <button
+            onClick={() => onOpen({ ...x, media: x.portMedia?.[at] ?? x.media, stats: x.portStats?.[at] ?? x.stats })}
+            className="mt-2 font-mono text-xs uppercase tracking-widest text-accent hover:underline">
+            {(x.portMedia?.[at] ?? x.media).length ? 'View screens →' : 'Details →'}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function PortStop({ p, n, active, onOpen }) {
-  const built = projects.filter((x) => x.ports?.includes(p.id))
   return (
     <article
       data-stop={p.id}
@@ -191,22 +235,7 @@ function PortStop({ p, n, active, onOpen }) {
       </ul>
       {p.role && <p className="mt-6 text-head">{p.role}</p>}
       {p.text && <p className="mt-2 max-w-prose leading-relaxed">{p.text}</p>}
-      {built.length > 0 && (
-        <ul className="mt-8 space-y-6 border-l border-line pl-5">
-          {built.map((x) => (
-            <li key={x.id}>
-              <p className="font-medium text-head">{x.name}</p>
-              <p className="mt-1 max-w-prose text-sm leading-relaxed">{x.summary}</p>
-              <Stats items={x.portStats?.[p.id] ?? x.stats} />
-              <button
-                onClick={() => onOpen({ ...x, media: x.portMedia?.[p.id] ?? x.media, stats: x.portStats?.[p.id] ?? x.stats })}
-                className="mt-2 font-mono text-xs uppercase tracking-widest text-accent hover:underline">
-                View screens →
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <Built at={p.id} onOpen={onOpen} />
     </article>
   )
 }
@@ -323,6 +352,7 @@ export default function Portfolio() {
                 <li key={p.name}>{p.name}</li>
               ))}
             </ul>
+            <Built at="network" onOpen={(x) => openProject(x, false)} />
           </article>
         </section>
 
