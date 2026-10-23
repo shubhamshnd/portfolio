@@ -289,8 +289,9 @@ export const projects = [
   {
     id: 'weighbridge',
     name: 'Weighbridge Management System',
-    summary: 'Captures cargo weights straight from the weighbridge instead of typed entries.',
-    stack: ['Electron', 'IoT', 'REST API'],
+    ports: ['swpl'],
+    summary: 'Captures truck weights straight from the weighbridge instead of typed entries. Getting the software to talk to the weighbridge took a lot of trial and error, and it is where I learned PySerial.',
+    stack: ['Electron', 'PySerial', 'REST API'],
     media: [
       '/projects/weighbridge/01.webp',
     ],
@@ -314,9 +315,15 @@ export const projects = [
   },
   {
     id: 'gate-permit',
-    name: 'Vehicle Gate Permits',
-    summary: 'Replaced paper gate passes for employee vehicles.',
-    stack: ['Django', 'SQLite'],
-    media: [],
+    name: 'Vehicle Gatepass System',
+    ports: ['jaigarh'],
+    summary: 'Replaced paper gate passes for employee vehicles. Requests go online for approval, approved passes print as QR stickers, and security scans them at the gate with a Flutter app that shows whether the pass is valid.',
+    stack: ['Django', 'Flutter', 'QR'],
+    // Names, IDs, emails and vehicle numbers are blurred in these screens.
+    media: [
+      '/projects/gate-permit/01.webp',
+      '/projects/gate-permit/02.webp',
+      '/projects/gate-permit/03.webp',
+    ],
   },
 ]
