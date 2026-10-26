@@ -15,9 +15,9 @@ export const profile = {
     "I like to start on the ground. I sit with the people doing the work, see where their time goes, and find the spreadsheets and reports nobody enjoys making. Then I design something better and build it myself.",
     "Most of what I make is data pipelines, ERP and SAP integrations, dashboards and, more and more, AI tools that answer questions from operations data. I'm also doing a PGPM at IIM Mumbai, so I can think about the business side as much as the tech.",
   ],
-  // Totals of the per-port numbers below.
+  // Headline numbers in About.
   highlights: [
-    { value: '₹4 Cr', label: 'licensing avoided' },
+    { value: '50+', label: 'in-house projects delivered' },
     { value: '7,500 h', label: 'manual work removed a year' },
     { value: '90+', label: 'reports automated' },
   ],
@@ -104,11 +104,7 @@ export const projects = [
     name: 'PortBird',
     ports: ['dharamtar', 'jnpa'],
     summary: 'A full port management system (port ERP) with SAP and GST integration. Built in-house instead of buying a licence.',
-    stats: ['₹2.5 crore licensing avoided at Dharamtar', '₹1.5 crore at JNPA', '₹10 lakh / site / year maintenance avoided'],
-    portStats: {
-      dharamtar: ['₹2.5 crore licensing avoided', '₹10 lakh / year maintenance avoided'],
-      jnpa: ['₹1.5 crore licensing avoided', '₹10 lakh / year maintenance avoided'],
-    },
+    stats: [],
     stack: ['Python', 'PostgreSQL', 'SAP API', 'GST API', 'Azure Data Lake', 'Entra ID'],
     // First item plays in the viewer; JNPA uses its own screens below.
     media: [
@@ -248,7 +244,7 @@ export const projects = [
   },
   {
     id: 'jaigarh-ems',
-    name: 'Jaigarh Energy Monitoring System',
+    name: 'Siemens-Based Energy Monitoring',
     ports: ['jaigarh'],
     summary: 'The same idea as Mangalore, built on Siemens PLCs: energy data read straight off the PLCs over S7.',
     stats: [],
@@ -258,7 +254,7 @@ export const projects = [
   },
   {
     id: 'mangalore-ems',
-    name: 'Mangalore Energy Monitoring System',
+    name: 'Moxa-Based Energy Monitoring',
     ports: ['mangalore'],
     summary: 'Where I learned to read energy meters through Moxa gateways. Readings stream through Kafka and Spark into a landing zone and PostgreSQL, and show on a live dashboard.',
     stats: [],
@@ -274,7 +270,7 @@ export const projects = [
     ports: ['network'],
     summary: 'Turns paper registers into digital ones. Built on an EAV model, so new forms are configured rather than coded, with approval workflows and role-based access.',
     stats: ['30+ processes digitized'],
-    sites: ['DPPL', 'SWPL', 'JPL', 'JNPA', 'Keni', 'Mangalore Coal', 'Mangalore Container'],
+    sites: ['DPPL', 'SWPL', 'JPL', 'JNPA', 'Keni', 'MCPL', 'MCTPL'],
     stack: ['EAV', 'RBAC', 'Workflows'],
     media: [
       'https://youtu.be/K5eaKjdn3os',
@@ -287,7 +283,7 @@ export const projects = [
     ports: ['network'],
     summary: 'Linked to the punch-in system to show headcount at every site in real time, with overstay alerts and overstay reports.',
     stats: [],
-    sites: ['DPPL', 'SWPL', 'JPL', 'JNPA', 'Keni', 'Mangalore Coal', 'Mangalore Container'],
+    sites: ['DPPL', 'SWPL', 'JPL', 'JNPA', 'Keni', 'MCPL', 'MCTPL'],
     stack: [],
     // Names, IDs and the signed-in email are blurred in these screens.
     media: [
