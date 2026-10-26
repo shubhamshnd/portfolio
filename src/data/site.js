@@ -3,7 +3,7 @@
 export const profile = {
   name: 'Shubham Shinde',
   title: 'Digital Transformation · Process Automation',
-  domains: 'Requirements · Process design · Automation · AI',
+  domains: 'Requirements Gathering · Process Design · Automation · AI',
   // Above the fold: what I'm looking for.
   openTo: 'Open to digital transformation and process automation consulting roles. Mumbai, Pune or remote.',
   lead: 'I take manual work, work out what the business needs, and automate it.',
