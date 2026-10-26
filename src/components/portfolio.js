@@ -324,7 +324,33 @@ function PortStop({ p, n, active, onOpen }) {
   )
 }
 
-export default function Portfolio() {
+// GitHub contribution calendar: columns are weeks, rows are days, amber by activity level.
+function Commits({ data }) {
+  const cols = Math.max(...data.days.map((d) => d.col)) + 1
+  return (
+    <div className="mt-12">
+      <h3 className="font-mono text-xs uppercase tracking-widest text-head">Code, last 12 months</h3>
+      <div className="mt-4 grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+        {data.days.map((d) => (
+          <span
+            key={`${d.row}-${d.col}`}
+            title={d.tip}
+            className="aspect-square rounded-[2px]"
+            style={{ gridRow: d.row + 1, gridColumn: d.col + 1, background: d.level ? `rgb(var(--accent) / ${0.2 + d.level * 0.2})` : 'rgb(var(--line))' }}
+          />
+        ))}
+      </div>
+      <p className="mt-3 font-mono text-xs text-ink/60">
+        {data.total} contributions on{' '}
+        <a href="https://github.com/shubhamshnd" target="_blank" rel="noreferrer" className="text-accent hover:underline">
+          GitHub
+        </a>
+      </p>
+    </div>
+  )
+}
+
+export default function Portfolio({ commits }) {
   const desktop = useDesktop()
   const [stop, setStop] = useState('about')
   const [nav, setNav] = useState('about')
@@ -466,6 +492,7 @@ export default function Portfolio() {
               </div>
             ))}
           </div>
+          {commits && <Commits data={commits} />}
           <p className="mt-12 font-mono text-xs text-ink/60">Scroll to follow the route ↓</p>
         </section>
 
