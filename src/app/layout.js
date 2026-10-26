@@ -5,8 +5,8 @@ import './globals.css'
 const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-sans' })
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' })
 
-// ponytail: one place for the public URL; switch to the custom domain when it is live.
-const SITE = 'https://shubhamshnd.vercel.app'
+// One place for the public URL.
+const SITE = 'https://www.shubhamshnd.in'
 const description =
   'Digital transformation for ports and maritime: port ERP, SAP and GST integration, multi-site dashboards and AI on operations data, built and rolled out across seven JSW Infrastructure sites. Open to port and maritime digital advisory roles.'
 
