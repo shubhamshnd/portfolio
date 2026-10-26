@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shubham Shinde - Résumé</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  @page { size: A4; margin: 9mm 12mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 9.1pt/1.36 'IBM Plex Sans', 'Segoe UI', Arial, sans-serif; color: #1b2733; }
+  a { color: inherit; text-decoration: none; }
+  h1 { font-size: 21pt; margin: 0; letter-spacing: -0.01em; }
+  .title { font-size: 11pt; font-weight: 600; color: #0f5c7a; margin-top: 2px; }
+  .contact { margin-top: 5px; font-size: 8.8pt; color: #46545f; }
+  .contact span + span::before { content: '·'; margin: 0 7px; color: #9aa7b0; }
+  .open { margin-top: 7px; padding-left: 8px; border-left: 3px solid #e09a12; font-size: 9pt; }
+  h2 { font: 600 8.6pt 'IBM Plex Mono', monospace; letter-spacing: 0.12em; text-transform: uppercase; color: #0f5c7a;
+       margin: 9px 0 4px; padding-bottom: 2px; border-bottom: 1px solid #d5dde2; }
+  p { margin: 0; }
+  .role { display: flex; justify-content: space-between; gap: 12px; margin-top: 5px; }
+  .role b { font-size: 10pt; }
+  .role .when { color: #46545f; white-space: nowrap; font-size: 9pt; }
+  .org { color: #46545f; font-size: 9pt; }
+  ul { margin: 3px 0 0; padding-left: 15px; }
+  li { margin: 1px 0; }
+  li b { font-weight: 600; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+  .k { font-weight: 600; }
+  .muted { color: #46545f; }
+</style>
+</head>
+<body>
+  <h1>Shubham Shinde</h1>
+  <div class="title">Digital Transformation · Ports &amp; Maritime</div>
+  <div class="contact">
+    <span>Navi Mumbai, India</span>
+    <span>shubhamshindesunil.work@gmail.com</span>
+    <span>linkedin.com/in/shubham-shnd</span>
+    <span>github.com/shubhamshnd</span>
+    <span>shubhamshnd.vercel.app</span>
+  </div>
+  <p class="open">Open to port and maritime digital advisory roles. Mumbai, Pune, the Gulf or remote.</p>
+
+  <h2>Summary</h2>
+  <p>3+ years taking digital systems for port operations at JSW Infrastructure from site discovery to multi-site rollout: a port ERP
+  with SAP and GST e-invoicing, live multi-port dashboards and AI on operations data, now running across seven sites. Pursuing a PGPM
+  (MBA) at IIM Mumbai to add commercial depth to solution design.</p>
+
+  <h2>Experience</h2>
+  <div class="role"><div><b>Assistant Manager, Digital Solutions Engineer</b> <span class="org">· JSW Infrastructure, Navi Mumbai</span></div><div class="when">Aug 2024 – Present</div></div>
+  <ul>
+    <li><b>PortBird port ERP:</b> ran the build-versus-buy evaluation and replaced a licensed port system with an in-house port ERP covering vessel calls, barge and MBC operations, berth planning, services and invoicing. Live at Dharamtar Port (DPPL), then replicated to the JSW JNPA liquid terminal; no licence or annual maintenance fees at either site.</li>
+    <li><b>SAP and GST integration:</b> invoices raised in PortBird are e-invoiced on the GST portal and posted to SAP automatically, with Microsoft Entra ID sign-in and role-based access.</li>
+    <li><b>Reporting automation:</b> replaced Excel-based daily progress and MIS reports with Python pipelines across PortBird, iPortman and SCMS. 90+ reports automated (50+ at DPPL, 40+ at JNPA), removing about 7,500 hours of manual reporting a year.</li>
+    <li><b>Multi-site platforms:</b> built and rolled out the Digital Logbook (EAV-based configurable forms, approval workflows, access control; 30+ processes digitized) and a Headcount Dashboard (punch-in integration, overstay alerts) to seven sites: DPPL, SWPL, JPL, JNPA, Keni, MCPL and MCTPL.</li>
+    <li><b>Centralized Dashboard:</b> one live map of every JSW Infrastructure port and terminal, plus operations dashboards for Jaigarh and South West Port.</li>
+    <li><b>AI on operations data:</b> an LLM assistant with retrieval and text-to-SQL that answers cargo, equipment and delay questions and shows the SQL behind every number; a Monte Carlo throughput forecast against target with P10 to P90 ranges, and an arrival planner.</li>
+    <li><b>Data platform:</b> designed the API that lands PostgreSQL data in Azure Data Lake for the bronze layer of a Databricks medallion lakehouse, including schemas and data quality checks.</li>
+    <li><b>OT and energy:</b> energy monitoring on Moxa gateways with Kafka and Spark into a landing zone and PostgreSQL (MCTPL), and on Siemens S7 PLCs read directly (JPL).</li>
+    <li>Led discovery and requirements workshops with operations, finance and HSE stakeholders across three port sites, and turned them into solution designs and phased rollout plans.</li>
+  </ul>
+
+  <div class="role"><div><b>Graduate Engineer Trainee</b> <span class="org">· JSW Infrastructure, Dharamtar Port, Raigad</span></div><div class="when">Aug 2023 – Aug 2024</div></div>
+  <ul>
+    <li><b>Weighbridge management system:</b> captures truck weights directly from the weighbridge over serial (PySerial) for 500–800 truck transactions a month, with validated receipts and live dashboards at DPPL and SWPL.</li>
+    <li><b>Vehicle gatepass system:</b> replaced paper gate passes with online approvals and QR stickers, plus a Flutter app for security to verify passes at the gate.</li>
+    <li><b>Vehicle speed detection:</b> YOLO vehicle detection and ANPR on ONNX for speed checks on port roads, with a violations dashboard and reports.</li>
+    <li>Automated HSE report extraction from external portals with Selenium, saving about 365 hours a year.</li>
+    <li>Selected for the GET Excellence Program at MDI Gurgaon (2024), a leadership and business management program.</li>
+  </ul>
+
+  <h2>Skills</h2>
+  <div class="grid">
+    <p><span class="k">Advisory:</span> process mapping and discovery, business cases and build versus buy, vendor and solution evaluation, phased multi-site rollout, adoption and change management, data governance and RBAC.</p>
+    <p><span class="k">Technology:</span> SAP and GST e-invoice integration, PostgreSQL, Azure Data Lake, Databricks, Kafka, Spark, Python, SQL, Django, Flask, Flutter, LLMs, RAG, text-to-SQL, MCP, YOLO, ONNX, Siemens S7, Moxa.</p>
+  </div>
+
+  <h2>Education</h2>
+  <div class="role"><div><b>PGPM (MBA)</b> <span class="org">· IIM Mumbai</span></div><div class="when">Jul 2026 – Jul 2028 (expected)</div></div>
+  <ul><li>Capstone: agentic AI for supply-chain decision support, using a RAG pipeline to ground multi-step agent reasoning in enterprise data.</li></ul>
+  <div class="role"><div><b>B.E., Computer Engineering</b> <span class="org">· Ramrao Adik Institute of Technology, Navi Mumbai · CGPA 8.1</span></div><div class="when">2019 – 2023</div></div>
+  <ul><li>Grand Finalist, Smart India Hackathon 2023.</li></ul>
+
+  <h2>Certifications</h2>
+  <p>Anthropic: Model Context Protocol, Claude Code in Action, Building with the Claude API (2025) <span class="muted">·</span> Hugging Face: AI Agents (2025)</p>
+</body>
+</html>

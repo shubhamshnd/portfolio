@@ -4,16 +4,36 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import Globe from '@/components/globe'
 import Backdrop from '@/components/backdrop'
-import { profile, journey, network, projects } from '@/data/site'
+import { track } from '@vercel/analytics'
+import { profile, journey, network, projects, method, leadership, capabilities, cases } from '@/data/site'
 
 const NAV = [
   { id: 'about', label: 'About' },
   { id: 'journey', label: 'Journey' },
+  { id: 'cases', label: 'Cases' },
   { id: 'work', label: 'Work' },
   { id: 'contact', label: 'Contact' },
 ]
 
 const isVideo = (src) => /\.(mp4|webm)$/i.test(src)
+const AREAS = ['All', 'AI', 'Data', 'IoT/OT', 'ERP', 'Apps']
+
+// External links; the résumé one is counted in Vercel Analytics.
+function Links({ className = '' }) {
+  return profile.links.map((l) => (
+    <li key={l.label} className={className}>
+      <a
+        href={l.href}
+        target="_blank"
+        rel="noreferrer"
+        className="hover:text-accent"
+        onClick={() => l.label === 'Résumé' && track('Résumé opened')}
+      >
+        {l.label} ↗
+      </a>
+    </li>
+  ))
+}
 
 // Runs a DOM update inside a View Transition when the browser has it.
 function transition(update) {
@@ -232,6 +252,53 @@ function Built({ at, onOpen }) {
   )
 }
 
+const CASE_PARTS = [
+  ['situation', 'Situation'],
+  ['diagnosis', 'What I found'],
+  ['options', 'Options'],
+  ['recommendation', 'Recommendation'],
+  ['rollout', 'Rollout'],
+]
+
+// A flagship project written as an engagement: situation to impact.
+function CaseStudy({ c, open, onOpen }) {
+  const p = projects.find((x) => x.id === c.project)
+  return (
+    <details open={open} className="group rounded-lg border border-line bg-panel p-5 open:border-accent/50" onToggle={(e) => e.currentTarget.open && track('Case study opened', { case: c.project })}>
+      <summary className="cursor-pointer list-none">
+        <p className="font-mono text-[11px] uppercase tracking-widest text-accent">{c.client}</p>
+        <h3 className="mt-1 text-lg font-semibold text-head">
+          {c.title} <span className="font-mono text-sm text-ink/60 group-open:hidden">+</span>
+        </h3>
+        <p className="mt-1 text-xs text-ink/70">My role: {c.role}</p>
+      </summary>
+      <dl className="mt-5 space-y-4 text-sm leading-relaxed">
+        {CASE_PARTS.map(([k, label]) => (
+          <div key={k}>
+            <dt className="font-mono text-[11px] uppercase tracking-widest text-head">{label}</dt>
+            <dd className="mt-1">{c[k]}</dd>
+          </div>
+        ))}
+        <div>
+          <dt className="font-mono text-[11px] uppercase tracking-widest text-head">Impact</dt>
+          <dd>
+            <ul className="mt-1 space-y-1 text-accent">
+              {c.impact.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      </dl>
+      {p?.media.length > 0 && (
+        <button onClick={() => onOpen(p)} className="mt-5 font-mono text-xs uppercase tracking-widest text-accent hover:underline">
+          View screens →
+        </button>
+      )}
+    </details>
+  )
+}
+
 function PortStop({ p, n, active, onOpen }) {
   return (
     <article
@@ -263,6 +330,7 @@ export default function Portfolio() {
   const [nav, setNav] = useState('about')
   const [selected, setSelected] = useState(null)
   const [open, setOpen] = useState(null)
+  const [area, setArea] = useState('All')
 
   // Whatever crosses the middle of the screen drives the globe and the nav.
   useEffect(() => {
@@ -296,6 +364,7 @@ export default function Portfolio() {
         <h1 className="text-4xl font-bold tracking-tight text-head sm:text-5xl">{profile.name}</h1>
         <h2 className="mt-3 text-lg font-medium text-head">{profile.title}</h2>
         <p className="mt-1 font-mono text-sm text-accent">{profile.domains}</p>
+        <p className="mt-4 max-w-md border-l-2 border-accent pl-3 text-sm text-head">{profile.openTo}</p>
 
         {/* One row so the globe gets the height. */}
         <nav className="mt-6 hidden lg:block" aria-label="Sections">
@@ -317,13 +386,7 @@ export default function Portfolio() {
         <div className="hidden min-h-0 flex-1 items-center lg:flex">{desktop && <GlobePanel stop={stop} />}</div>
 
         <ul className="mt-auto flex gap-6 font-mono text-sm lg:mt-0">
-          {profile.links.map((l) => (
-            <li key={l.label}>
-              <a href={l.href} target="_blank" rel="noreferrer" className="hover:text-accent">
-                {l.label} ↗
-              </a>
-            </li>
-          ))}
+          <Links />
         </ul>
       </header>
 
@@ -338,13 +401,14 @@ export default function Portfolio() {
         <section id="about" data-stop="about" data-nav="about" className="scroll-mt-16 lg:min-h-[60vh]">
           <h2 className="label">About</h2>
           <p className="max-w-prose text-2xl font-medium leading-snug text-head sm:text-3xl">{profile.lead}</p>
-          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 font-mono text-xs sm:grid-cols-[2fr_1fr_1fr]">
+          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 font-mono text-xs">
             {[
               ['Now', `${profile.role}, ${profile.company}`],
+              ['Studying', profile.education],
               ['Experience', profile.experience],
               ['Based in', profile.location],
             ].map(([k, v]) => (
-              <div key={k} className={k === 'Now' ? 'col-span-2 sm:col-span-1' : ''}>
+              <div key={k}>
                 <dt className="uppercase tracking-widest text-ink/60">{k}</dt>
                 <dd className="mt-1 text-head">{v}</dd>
               </div>
@@ -355,7 +419,7 @@ export default function Portfolio() {
               {t}
             </p>
           ))}
-          <dl className="mt-10 grid grid-cols-3 gap-4 border-y border-line py-6">
+          <dl className="mt-10 grid grid-cols-2 gap-4 border-y border-line py-6 sm:grid-cols-4">
             {profile.highlights.map((h) => (
               <div key={h.label}>
                 <dt className="sr-only">{h.label}</dt>
@@ -370,15 +434,42 @@ export default function Portfolio() {
                 {profile.email}
               </a>
             </li>
-            {profile.links.map((l) => (
-              <li key={l.label}>
-                <a href={l.href} target="_blank" rel="noreferrer" className="hover:text-accent">
-                  {l.label} ↗
-                </a>
+            <Links />
+          </ul>
+        </section>
+
+        <section id="method" data-stop="about" data-nav="about" className="mt-24 scroll-mt-16">
+          <h2 className="label">How I work</h2>
+          <ol className="grid gap-5 sm:grid-cols-2">
+            {method.map((m, i) => (
+              <li key={m.step} className="reveal">
+                <p className="font-mono text-xs text-accent">{String(i + 1).padStart(2, '0')}</p>
+                <p className="mt-1 font-medium text-head">{m.step}</p>
+                <p className="mt-1 text-sm leading-relaxed">{m.text}</p>
               </li>
             ))}
+          </ol>
+          <h3 className="mt-12 font-mono text-xs uppercase tracking-widest text-head">Working with people</h3>
+          <ul className="mt-4 space-y-2 border-l border-line pl-5 text-sm leading-relaxed">
+            {leadership.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
           </ul>
-          <p className="mt-8 font-mono text-xs text-ink/60">Scroll to follow the route ↓</p>
+          <div className="mt-12 grid gap-8 sm:grid-cols-2">
+            {Object.entries(capabilities).map(([group, items]) => (
+              <div key={group}>
+                <h3 className="font-mono text-xs uppercase tracking-widest text-head">{group}</h3>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {items.map((c) => (
+                    <li key={c} className="rounded border border-line px-2.5 py-1 text-xs text-head">
+                      {c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="mt-12 font-mono text-xs text-ink/60">Scroll to follow the route ↓</p>
         </section>
 
         <section id="journey" className="mt-24 scroll-mt-16">
@@ -399,11 +490,32 @@ export default function Portfolio() {
           </article>
         </section>
 
+        <section id="cases" data-stop="network" data-nav="cases" className="mt-24 scroll-mt-16">
+          <h2 className="label">Case studies</h2>
+          <div className="space-y-4">
+            {cases.map((c, i) => (
+              <CaseStudy key={c.project} c={c} open={i === 0} onOpen={(x) => openProject(x, false)} />
+            ))}
+          </div>
+        </section>
+
         <section id="work" data-stop="network" data-nav="work" className="mt-24 scroll-mt-16">
           <h2 className="label">Work</h2>
+          <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter work">
+            {AREAS.map((a) => (
+              <button
+                key={a}
+                onClick={() => setArea(a)}
+                aria-pressed={area === a}
+                className={`rounded-full border px-3 py-1 font-mono text-xs ${area === a ? 'border-accent bg-accent text-bg' : 'border-line text-ink hover:text-head'}`}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
           <ul className="grid gap-6 sm:grid-cols-2">
-            {projects.map((p) => (
-              <li key={p.id} className="reveal">
+            {projects.filter((p) => p.media.length && (area === 'All' || p.areas?.includes(area))).map((p) => (
+              <li key={p.id}>
                 <button onClick={() => openProject(p)} className="group w-full text-left">
                   <Thumb
                     project={p}
@@ -413,6 +525,7 @@ export default function Portfolio() {
                   <p className="mt-1 text-sm">{p.summary}</p>
                   <Stats items={p.stats} />
                   <Sites items={p.sites} />
+                  <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-ink/60">{p.areas?.join(' · ')}</p>
                 </button>
               </li>
             ))}
@@ -421,10 +534,20 @@ export default function Portfolio() {
 
         <section id="contact" data-stop="network" data-nav="contact" className="mt-32 min-h-[50vh] scroll-mt-16 pb-24">
           <h2 className="label">Contact</h2>
-          <p className="max-w-prose text-lg">Email is the quickest way to reach me.</p>
-          <a href={`mailto:${profile.email}`} className="mt-4 inline-block font-mono text-accent hover:underline">
-            {profile.email}
-          </a>
+          <p className="max-w-prose text-2xl font-medium leading-snug text-head">{profile.openTo}</p>
+          <p className="mt-3 max-w-prose">Email is the quickest way to reach me. I reply within a day or two.</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a href={`mailto:${profile.email}`} className="rounded-md bg-accent px-5 py-2.5 font-medium text-bg hover:bg-accent/90">
+              Email me
+            </a>
+            <a href={profile.links[0].href} target="_blank" rel="noreferrer" className="rounded-md border border-line px-5 py-2.5 font-medium text-head hover:border-accent">
+              LinkedIn ↗
+            </a>
+            <a href="/shubham_resume.pdf" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened')} className="rounded-md border border-line px-5 py-2.5 font-medium text-head hover:border-accent">
+              Résumé ↗
+            </a>
+          </div>
+          <p className="mt-4 font-mono text-sm text-ink/70">{profile.email}</p>
         </section>
       </main>
 

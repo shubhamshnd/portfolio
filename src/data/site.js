@@ -2,23 +2,27 @@
 
 export const profile = {
   name: 'Shubham Shinde',
-  title: 'Digital & AI Solution Architect',
-  domains: 'Ports · Supply Chain · Manufacturing',
+  title: 'Digital Transformation · Ports & Maritime',
+  domains: 'Data · AI · Systems for port operations',
+  // Above the fold: what I'm looking for.
+  openTo: 'Open to port and maritime digital advisory roles. Mumbai, Pune, the Gulf or remote.',
   lead: 'I build software for ports, plants and supply chains.',
   // Shown as a facts row at the top of About.
   role: 'Assistant Manager, Digital Solutions Engineer',
   company: 'JSW Infrastructure',
   experience: '3+ years',
   location: 'Navi Mumbai, India',
+  education: 'PGPM (MBA), IIM Mumbai · Jul 2026 – Jul 2028',
   intro: [
     "I'm an Assistant Manager and Digital Solutions Engineer at JSW Infrastructure, where I've spent the last three years building the systems our ports run on.",
     "I like to start on the ground. I sit with the people doing the work, see where their time goes, and find the spreadsheets and reports nobody enjoys making. Then I design something better and build it myself.",
-    "Most of what I make is data pipelines, ERP and SAP integrations, dashboards and, more and more, AI tools that answer questions from operations data. I'm also doing a PGPM at IIM Mumbai, so I can think about the business side as much as the tech.",
+    "Most of what I make is data pipelines, ERP and SAP integrations, dashboards and, more and more, AI tools that answer questions from operations data. I'm now doing a PGPM at IIM Mumbai, so I can make the business case for a system as well as build it.",
   ],
   // Headline numbers in About.
   highlights: [
     { value: '50+', label: 'in-house projects delivered' },
-    { value: '7,500 h', label: 'manual work removed a year' },
+    { value: '7', label: 'sites running my systems' },
+    { value: '7,500', label: 'hours of manual work removed a year' },
     { value: '90+', label: 'reports automated' },
   ],
   email: 'shubhamshindesunil.work@gmail.com',
@@ -94,13 +98,16 @@ export const network = [
 ]
 
 // ports: journey ids where the project runs ('network' = the JSW Infrastructure stop); listed under them on the route.
+// areas: AI / Data / IoT/OT / ERP / Apps, used by the Work filter.
 // sites: where a JSW-wide project is running, shown as chips.
 // stats: short proof lines shown in accent. portStats / portMedia: per-port overrides shown when opened from that port.
 // media: files in /public/projects/<id>/ — images (.png/.jpg/.webp) or videos (.mp4/.webm).
 // e.g. media: ['/projects/weighbridge/1.png', '/projects/weighbridge/demo.mp4']
+// Projects with no media stay on the route but are left out of the Work grid.
 export const projects = [
   {
     id: 'portbird',
+    areas: ['ERP', 'Data'],
     name: 'PortBird',
     ports: ['dharamtar', 'jnpa'],
     summary: 'A full port management system (port ERP) with SAP and GST integration. Built in-house instead of buying a licence.',
@@ -127,6 +134,7 @@ export const projects = [
   },
   {
     id: 'sap-gst',
+    areas: ['ERP'],
     name: 'SAP and GST Integration',
     ports: ['dharamtar', 'jnpa'],
     summary: 'Invoices raised in PortBird are e-invoiced on the GST portal and posted to SAP automatically, so finance never re-enters them.',
@@ -141,6 +149,7 @@ export const projects = [
   },
   {
     id: 'automated-reports',
+    areas: ['Data'],
     name: 'Automated Reports',
     ports: ['dharamtar', 'jnpa'],
     summary: 'Daily and recurring port reports generated automatically instead of compiled by hand.',
@@ -165,11 +174,12 @@ export const projects = [
   },
   {
     id: 'cargo-prediction',
+    areas: ['AI', 'Data'],
     name: 'Predictive Analysis on Cargo Handling',
     ports: ['dharamtar'],
-    summary: 'Predictive models on cargo handling data.',
+    summary: "Forecasts where the year's cargo throughput will land against target. It simulates the remaining days thousands of times from the port's own seasonality, gives a P10 to P90 range and the odds of hitting target, and an arrival planner turns ETAs into an hour-by-hour plan.",
     stats: [],
-    stack: ['Python'],
+    stack: ['Python', 'Monte Carlo simulation', 'Forecasting'],
     media: [
       '/projects/cargo-prediction/12-forecast.webp',
       '/projects/cargo-prediction/13-forecast-scenarios.webp',
@@ -178,6 +188,7 @@ export const projects = [
   },
   {
     id: 'rag-reporting',
+    areas: ['AI'],
     name: 'RAG-based Automated Reporting',
     ports: ['dharamtar'],
     summary: 'Ask about cargo, equipment or delays in plain English and get an answer with a chart, plus the SQL behind it so every number can be checked.',
@@ -191,6 +202,7 @@ export const projects = [
   },
   {
     id: 'central-dashboard',
+    areas: ['Data'],
     name: 'Centralized Dashboard',
     ports: ['network'],
     summary: "One live view of every JSW Infrastructure port and terminal. Pick a port on the map to see today's discharge, berths, cargo mix, delays, tides and the barge fleet.",
@@ -207,6 +219,7 @@ export const projects = [
   },
   {
     id: 'jaigarh-ops',
+    areas: ['Data'],
     name: 'Jaigarh Operations Dashboard',
     ports: ['jaigarh'],
     summary: 'Live operations for Jaigarh: berth and anchorage status, cargo against targets, truck and vessel turnaround, yard stock, weather and tides.',
@@ -222,6 +235,7 @@ export const projects = [
   },
   {
     id: 'swpl-ops',
+    areas: ['Data'],
     name: 'SWPL Operations Dashboard',
     ports: ['swpl'],
     summary: 'Cargo, rake and vessel tracking for South West Port: stock by product, live rake loading, berth-wise discharge and dispatch, turnaround and demurrage.',
@@ -235,6 +249,7 @@ export const projects = [
   },
   {
     id: 'smart-canteen',
+    areas: ['Apps'],
     name: 'Smart Canteen',
     ports: ['jaigarh'],
     summary: 'Replaced printed meal tokens with QR codes. People scan at the canteen to log their meal, a voice announces their name, and daily meal-log alerts keep it transparent.',
@@ -244,6 +259,7 @@ export const projects = [
   },
   {
     id: 'jaigarh-ems',
+    areas: ['IoT/OT'],
     name: 'Siemens-Based Energy Monitoring',
     ports: ['jaigarh'],
     summary: 'The same idea as Mangalore, built on Siemens PLCs: energy data read straight off the PLCs over S7.',
@@ -254,6 +270,7 @@ export const projects = [
   },
   {
     id: 'mangalore-ems',
+    areas: ['IoT/OT', 'Data'],
     name: 'Moxa-Based Energy Monitoring',
     ports: ['mangalore'],
     summary: 'Where I learned to read energy meters through Moxa gateways. Readings stream through Kafka and Spark into a landing zone and PostgreSQL, and show on a live dashboard.',
@@ -266,6 +283,7 @@ export const projects = [
   },
   {
     id: 'digital-logbook',
+    areas: ['Apps'],
     name: 'Digital Logbook',
     ports: ['network'],
     summary: 'Turns paper registers into digital ones. Built on an EAV model, so new forms are configured rather than coded, with approval workflows and role-based access.',
@@ -279,6 +297,7 @@ export const projects = [
   },
   {
     id: 'headcount-dashboard',
+    areas: ['Data', 'IoT/OT'],
     name: 'Headcount Dashboard',
     ports: ['network'],
     summary: 'Linked to the punch-in system to show headcount at every site in real time, with overstay alerts and overstay reports.',
@@ -293,6 +312,7 @@ export const projects = [
   },
   {
     id: 'weighbridge',
+    areas: ['IoT/OT'],
     name: 'Weighbridge Management System',
     ports: ['swpl'],
     summary: 'Captures truck weights straight from the weighbridge instead of typed entries. Getting the software to talk to the weighbridge took a lot of trial and error, and it is where I learned PySerial.',
@@ -303,6 +323,7 @@ export const projects = [
   },
   {
     id: 'anpr-speed',
+    areas: ['AI', 'IoT/OT'],
     name: 'Vehicle Speed Detection',
     summary: 'Speed checks on port roads: YOLO26 spots vehicles, an ANPR model running on ONNX reads the plates, and violations go to a live dashboard and reports.',
     stack: ['YOLO26', 'ANPR', 'ONNX', 'Flask', 'Chart.js'],
@@ -313,6 +334,7 @@ export const projects = [
   },
   {
     id: 'gate-permit',
+    areas: ['Apps'],
     name: 'Vehicle Gatepass System',
     ports: ['jaigarh'],
     summary: 'Replaced paper gate passes for employee vehicles. Requests go online for approval, approved passes print as QR stickers, and security scans them at the gate with a Flutter app that shows whether the pass is valid.',
@@ -323,5 +345,81 @@ export const projects = [
       '/projects/gate-permit/02.webp',
       '/projects/gate-permit/03.webp',
     ],
+  },
+]
+
+// How I work: the method, in order.
+export const method = [
+  { step: 'Go to the ground', text: 'Sit with the shift in-charges, finance and HSE teams and watch the work: who types what into which sheet, and where the time goes.' },
+  { step: 'Map the process', text: 'Write down the real process, the data it needs and who owns each step, before talking about software.' },
+  { step: 'Make the business case', text: 'Put a value on the hours, errors and licences involved, and compare doing nothing, buying a product and building in-house.' },
+  { step: 'Build or select', text: 'Build when the process is specific to us and we should own the data. Recommend a vendor when a product already fits.' },
+  { step: 'Roll out in phases', text: 'Start at one site, fix what the users find, then replicate to the next site with the same core and local changes.' },
+  { step: 'Drive adoption', text: 'Train the people who use it, retire the old sheet, and keep checking that the new system is the one actually in use.' },
+]
+
+// Evidence of working with stakeholders, shown under the method.
+export const leadership = [
+  'Led discovery and requirements workshops with operations, finance and HSE teams across three port sites.',
+  'Ran the build-versus-buy evaluation for PortBird and took it from proof of concept to production at two sites.',
+  'Rolled the Digital Logbook and Headcount Dashboard out to seven JSW Infrastructure sites.',
+  'Selected for the Graduate Engineer Trainee Excellence Program at MDI Gurgaon (2024).',
+]
+
+// Capabilities, split the way a consulting team staffs them.
+export const capabilities = {
+  Advisory: ['Process mapping and discovery', 'Business cases and build versus buy', 'Vendor and solution evaluation', 'Phased multi-site rollout', 'Adoption and change management', 'Data governance and access control'],
+  Technology: ['SAP and GST e-invoice integration', 'PostgreSQL, Azure Data Lake, Databricks', 'Kafka and Spark pipelines', 'LLMs, RAG and text-to-SQL', 'Computer vision: YOLO, ANPR on ONNX', 'OT data: Siemens S7 PLCs, Moxa gateways', 'Flutter, Django, Flask, Electron'],
+}
+
+// Flagship work written as engagements. project = id in `projects` (for its screens).
+export const cases = [
+  {
+    project: 'portbird',
+    title: 'Replacing a licensed port system with PortBird',
+    client: 'Dharamtar Port (DPPL), then JSW JNPA Liquid Terminal',
+    role: 'Discovery, business case, architecture, build and rollout',
+    situation: 'Port operations, billing and reporting were split between a licensed port system, spreadsheets and separate posting to SAP and the GST portal. Daily progress and MIS reports were compiled by hand.',
+    diagnosis: 'Most of the effort went into moving the same data between systems. The licensed product did not follow how this port runs its barges and MBCs, and the port did not own its data.',
+    options: 'Renew or buy a commercial port system, extend the existing one, or build in-house on the company stack.',
+    recommendation: 'Build in-house: a port ERP shaped around our own vessel, barge and berth processes, with SAP and GST integrated so an invoice is entered once, and no licence or annual maintenance fee.',
+    rollout: 'Went live at Dharamtar first, then replicated to the JNPA liquid terminal with the same core, adapted for parcels, pipelines and tankers.',
+    impact: ['No licence or annual maintenance fees at either site', '50+ reports automated at Dharamtar, 40+ at JNPA', 'About 7,500 hours of manual reporting removed a year', 'Invoices e-invoiced and posted to SAP without re-entry'],
+  },
+  {
+    project: 'central-dashboard',
+    title: 'One live view of every port',
+    client: 'JSW Infrastructure leadership',
+    role: 'Design and build',
+    situation: 'Each port reported through its own systems and spreadsheets, so getting a picture across the network meant collecting numbers from every site.',
+    diagnosis: 'The data already existed in each site system. What was missing was one place that pulled it together the same way for every port.',
+    options: 'A separate report from each site, a BI tool on top of a shared extract, or a purpose-built live map fed by the site systems.',
+    recommendation: 'A live map of the whole network where picking a port shows the same view: discharge, berths, cargo mix, delays, tides and the barge fleet.',
+    rollout: 'Built on top of the site pipelines, so a port appears once its data is connected.',
+    impact: ['One screen for every JSW Infrastructure port and terminal', 'The same metrics, defined the same way, for each site'],
+  },
+  {
+    project: 'digital-logbook',
+    title: 'Digitising registers across seven sites',
+    client: 'Operations, safety and admin teams across JSW Infrastructure',
+    role: 'Architecture, build and rollout',
+    situation: 'Routine processes ran on paper registers and spreadsheets, each with its own format, with no clear owner or approval trail.',
+    diagnosis: 'Building one app per register would never keep up. The forms differed, but the needs were the same: fields, validation, approval and access control.',
+    options: 'A separate app for each process, a low-code product licence, or one configurable platform.',
+    recommendation: 'One platform built on an EAV data model, so a new register is configured rather than coded, with approval workflows, data ownership and role-based access.',
+    rollout: 'Rolled out to seven sites: DPPL, SWPL, JPL, JNPA, Keni, MCPL and MCTPL.',
+    impact: ['30+ processes digitized', 'Live at seven sites', 'Every entry has an owner, validation and an approval trail'],
+  },
+  {
+    project: 'rag-reporting',
+    title: 'Answering operations questions in plain English',
+    client: 'Port operations and management, Dharamtar',
+    role: 'Design and build',
+    situation: 'Questions like which equipment handled the most cargo, or which delays were most common, needed someone to pull data and build a one-off report.',
+    diagnosis: 'The answers were already in the equipment and shift records. The bottleneck was getting from the question to the right query.',
+    options: 'More fixed reports, a self-service BI tool, or an assistant that writes the query.',
+    recommendation: 'An assistant that uses an LLM with retrieval to answer from operations data, and always shows its date range and the SQL behind the answer, so every number can be checked.',
+    rollout: 'Built into PortBird, next to the reports people already use.',
+    impact: ['An answer with a chart in one step', 'Every number comes with the query that produced it'],
   },
 ]
