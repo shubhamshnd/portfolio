@@ -5,7 +5,7 @@ export const profile = {
   title: 'Digital Transformation · Ports & Maritime',
   domains: 'Data · AI · Systems for port operations',
   // Above the fold: what I'm looking for.
-  openTo: 'Open to port and maritime digital advisory roles. Mumbai, Pune, the Gulf or remote.',
+  openTo: 'Open to port and maritime digital advisory roles. Mumbai, Pune or remote.',
   lead: 'I build software for ports, plants and supply chains.',
   // Shown as a facts row at the top of About.
   role: 'Assistant Manager, Digital Solutions Engineer',
