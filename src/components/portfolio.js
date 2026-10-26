@@ -5,7 +5,7 @@ import { flushSync } from 'react-dom'
 import Globe from '@/components/globe'
 import Backdrop from '@/components/backdrop'
 import { track } from '@vercel/analytics'
-import { profile, journey, network, projects, method, leadership, capabilities, cases, testimonials } from '@/data/site'
+import { profile, journey, network, projects, method, leadership, capabilities, tech, cases, testimonials } from '@/data/site'
 
 const NAV = [
   { id: 'about', label: 'About' },
@@ -330,7 +330,7 @@ function Commits({ data }) {
   return (
     <div className="mt-12">
       <h3 className="font-mono text-xs uppercase tracking-widest text-head">Code, last 6 months</h3>
-      <div className="mt-4 grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+      <div className="mt-4 grid gap-[3px]" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 12px))` }}>
         {data.days.map((d) => (
           <span
             key={`${d.row}-${d.col}`}
@@ -478,7 +478,7 @@ export default function Portfolio({ commits }) {
               <li key={t}>{t}</li>
             ))}
           </ul>
-          <div className="mt-12 grid gap-8 sm:grid-cols-2">
+          <div className="mt-12 space-y-10">
             {Object.entries(capabilities).map(([group, items]) => (
               <div key={group}>
                 <h3 className="font-mono text-xs uppercase tracking-widest text-head">{group}</h3>
@@ -491,6 +491,18 @@ export default function Portfolio({ commits }) {
                 </ul>
               </div>
             ))}
+            <div>
+              <h3 className="font-mono text-xs uppercase tracking-widest text-head">Technology</h3>
+              <ul className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-5">
+                {tech.map(([name, icon]) => (
+                  <li key={name} className="flex flex-col items-center gap-2 rounded border border-line px-1 py-3 text-head/80 transition-colors hover:border-accent/50 hover:text-accent">
+                    {/* Monochrome via mask so every logo takes the text colour. */}
+                    <span aria-hidden="true" className="h-6 w-6 bg-current" style={{ mask: `url(/icons/${icon}.svg) center / contain no-repeat`, WebkitMask: `url(/icons/${icon}.svg) center / contain no-repeat` }} />
+                    <span className="text-center font-mono text-[10px] leading-tight sm:text-[11px]">{name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
           {commits && <Commits data={commits} />}
           <p className="mt-12 font-mono text-xs text-ink/60">Scroll to follow the route ↓</p>

@@ -369,8 +369,31 @@ export const leadership = [
 // Capabilities, split the way a consulting team staffs them.
 export const capabilities = {
   Advisory: ['Process mapping and discovery', 'Business cases and build versus buy', 'Vendor and solution evaluation', 'Phased multi-site rollout', 'Adoption and change management', 'Data governance and access control'],
-  Technology: ['SAP and GST e-invoice integration', 'PostgreSQL, Azure Data Lake, Databricks', 'Kafka and Spark pipelines', 'LLMs, RAG and text-to-SQL', 'Computer vision: YOLO, ANPR on ONNX', 'OT data: Siemens S7 PLCs, Moxa gateways', 'Flutter, Django, Flask, Electron'],
 }
+
+// Technology tiles: [label, Simple Icons slug in public/icons].
+export const tech = [
+  ['Python', 'python'],
+  ['AWS', 'amazonwebservices'],
+  ['Azure', 'microsoftazure'],
+  ['Google Cloud', 'googlecloud'],
+  ['Databricks', 'databricks'],
+  ['Kafka', 'apachekafka'],
+  ['Spark', 'apachespark'],
+  ['PostgreSQL', 'postgresql'],
+  ['MongoDB', 'mongodb'],
+  ['TensorFlow', 'tensorflow'],
+  ['Hugging Face', 'huggingface'],
+  ['YOLO', 'ultralytics'],
+  ['ONNX', 'onnx'],
+  ['SAP', 'sap'],
+  ['Siemens S7', 'siemens'],
+  ['Next.js', 'nextdotjs'],
+  ['Django', 'django'],
+  ['Flask', 'flask'],
+  ['Flutter', 'flutter'],
+  ['Electron', 'electron'],
+]
 
 // Flagship work written as engagements. project = id in `projects` (for its screens).
 export const cases = [
