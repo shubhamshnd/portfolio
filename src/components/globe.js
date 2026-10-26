@@ -10,19 +10,6 @@ import { journey, network } from '@/data/site'
 
 const INDIA = [20, 76]
 const HUB = journey.find((p) => p.id === 'jaigarh').location
-const at = (id) => journey.find((p) => p.id === id).location
-// Origin ports from the PortBird vessel lists; drawn faintly on the opening spin as trade lanes.
-const LANES = [
-  [[33.07, 131.86], at('dharamtar')], // Tsukumi, Japan
-  [[19.66, 57.7], at('dharamtar')], // Duqm, Oman
-  [[44.72, 37.77], at('dharamtar')], // Novorossiysk
-  [[22.6, 120.3], at('jnpa')], // Kaohsiung
-  [[35.5, 129.4], at('jnpa')], // Ulsan
-  [[12.68, 101.15], at('jnpa')], // Map Ta Phut
-  [[27.0, 49.66], at('jnpa')], // Jubail
-  [[33.1, -8.63], at('jnpa')], // Jorf Lasfar
-  [[-32.95, -60.64], at('jnpa')], // Rosario
-]
 const C = {
   sea: '#0d1828',
   land: '#16263d',
@@ -158,7 +145,6 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       // The opening spin shows the whole network so the globe isn't bare before you scroll.
       const intro = state.spin
       let k = 0
-      if (intro) LANES.forEach(([a, b]) => floatArc(a, b, k++, t, true))
       const upTo = intro ? journey.length - 1 : Math.min(step, journey.length - 1)
       for (let i = 1; i <= upTo; i++) floatArc(journey[i - 1].location, journey[i].location, k++, t)
       if (all || intro) network.forEach((p) => floatArc(HUB, p.location, k++, t))
