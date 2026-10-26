@@ -60,7 +60,7 @@ function caption(stop) {
   return ['Route', `Scroll to start at ${journey[0].port}`]
 }
 
-function GlobePanel({ stop, size = 'min(760px, calc(100vh - 330px), 100%)' }) {
+function GlobePanel({ stop, size = 'min(560px, calc(100vh - 400px), 100%)' }) {
   const [title, sub] = caption(stop)
   return (
     <figure className="mx-auto w-full" style={{ maxWidth: size }}>
@@ -385,7 +385,12 @@ export default function Portfolio() {
         {/* Slot is always there so the page doesn't jump when the globe mounts. */}
         <div className="hidden min-h-0 flex-1 items-center lg:flex">{desktop && <GlobePanel stop={stop} />}</div>
 
-        <ul className="mt-auto flex gap-6 font-mono text-sm lg:mt-0">
+        <ul className="mt-auto flex flex-wrap gap-x-6 gap-y-2 font-mono text-sm lg:mt-4">
+          <li>
+            <a href={`mailto:${profile.email}`} className="text-accent hover:underline">
+              Email
+            </a>
+          </li>
           <Links />
         </ul>
       </header>
@@ -428,14 +433,6 @@ export default function Portfolio() {
               </div>
             ))}
           </dl>
-          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-mono text-sm">
-            <li>
-              <a href={`mailto:${profile.email}`} className="text-accent hover:underline">
-                {profile.email}
-              </a>
-            </li>
-            <Links />
-          </ul>
         </section>
 
         <section id="method" data-stop="about" data-nav="about" className="mt-24 scroll-mt-16">
