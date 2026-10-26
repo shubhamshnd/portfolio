@@ -10,6 +10,19 @@ import { journey, network } from '@/data/site'
 
 const INDIA = [20, 76]
 const HUB = journey.find((p) => p.id === 'jaigarh').location
+const at = (id) => journey.find((p) => p.id === id).location
+// Origin ports from the PortBird vessel lists; drawn faintly on the opening spin as trade lanes.
+const LANES = [
+  [[33.07, 131.86], at('dharamtar')], // Tsukumi, Japan
+  [[19.66, 57.7], at('dharamtar')], // Duqm, Oman
+  [[44.72, 37.77], at('dharamtar')], // Novorossiysk
+  [[22.6, 120.3], at('jnpa')], // Kaohsiung
+  [[35.5, 129.4], at('jnpa')], // Ulsan
+  [[12.68, 101.15], at('jnpa')], // Map Ta Phut
+  [[27.0, 49.66], at('jnpa')], // Jubail
+  [[33.1, -8.63], at('jnpa')], // Jorf Lasfar
+  [[-32.95, -60.64], at('jnpa')], // Rosario
+]
 const C = {
   sea: '#0d1828',
   land: '#16263d',
@@ -109,11 +122,15 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       }
       ctx.stroke()
     }
-    const floatArc = (a, b, k, t) => {
+    const floatArc = (a, b, k, t, faint = false) => {
       const pts = arcPoints(a, b)
       ctx.lineCap = 'round'
-      ctx.strokeStyle = 'rgba(255,176,32,0.16)'; ctx.lineWidth = 5; trace(pts, 0, N)
-      ctx.strokeStyle = 'rgba(255,196,90,0.85)'; ctx.lineWidth = 1.3; trace(pts, 0, N)
+      if (faint) {
+        ctx.strokeStyle = 'rgba(125,180,230,0.35)'; ctx.lineWidth = 0.9; trace(pts, 0, N)
+      } else {
+        ctx.strokeStyle = 'rgba(255,176,32,0.16)'; ctx.lineWidth = 5; trace(pts, 0, N)
+        ctx.strokeStyle = 'rgba(255,196,90,0.85)'; ctx.lineWidth = 1.3; trace(pts, 0, N)
+      }
       if (still) return
       // A light pulse runs along each arc, staggered so they don't move in lockstep.
       const head = Math.floor((((t / 1900) + k * 0.37) % 1) * N)
@@ -138,9 +155,13 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       const { step } = state
       const all = step >= journey.length
       const port = step >= 0 && !all
+      // The opening spin shows the whole network so the globe isn't bare before you scroll.
+      const intro = state.spin
       let k = 0
-      for (let i = 1; i <= Math.min(step, journey.length - 1); i++) floatArc(journey[i - 1].location, journey[i].location, k++, t)
-      if (all) network.forEach((p) => floatArc(HUB, p.location, k++, t))
+      if (intro) LANES.forEach(([a, b]) => floatArc(a, b, k++, t, true))
+      const upTo = intro ? journey.length - 1 : Math.min(step, journey.length - 1)
+      for (let i = 1; i <= upTo; i++) floatArc(journey[i - 1].location, journey[i].location, k++, t)
+      if (all || intro) network.forEach((p) => floatArc(HUB, p.location, k++, t))
 
       // Markers and labels; labels skip any spot already taken so close ports don't overprint.
       const centre = [cam.lon, cam.lat]
@@ -206,7 +227,7 @@ export default function Globe({ stop, shift = 0, className = '' }) {
         cam.shift += (state.shift - cam.shift) * k
         more = true
       }
-      if (state.step >= 1 && !still) more = true // arcs on screen: keep the pulses moving
+      if ((state.step >= 1 || state.spin) && !still) more = true // arcs on screen: keep the pulses moving
       // ponytail: phones redraw at ~30 fps; the chart moves slowly and scrolling gets the rest.
       if (w >= 500 || t - drawn >= 30 || !more) { draw(t); drawn = t }
       if (more && !dead) raf = requestAnimationFrame(tick)
