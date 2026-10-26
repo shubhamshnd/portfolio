@@ -2,11 +2,11 @@
 
 export const profile = {
   name: 'Shubham Shinde',
-  title: 'Digital Transformation · Ports & Maritime',
-  domains: 'Data · AI · Systems for port operations',
+  title: 'Digital Transformation · Process Automation',
+  domains: 'Requirements · Process design · Automation · AI',
   // Above the fold: what I'm looking for.
-  openTo: 'Open to port and maritime digital advisory roles. Mumbai, Pune or remote.',
-  lead: 'I build software for ports, plants and supply chains.',
+  openTo: 'Open to digital transformation and process automation consulting roles. Mumbai, Pune or remote.',
+  lead: 'I take manual work, work out what the business needs, and automate it.',
   // Shown as a facts row at the top of About.
   role: 'Assistant Manager, Digital Solutions Engineer',
   company: 'JSW Infrastructure',
@@ -14,9 +14,9 @@ export const profile = {
   location: 'Navi Mumbai, India',
   education: 'PGPM (MBA), IIM Mumbai · Jul 2026 – Jul 2028',
   intro: [
-    "I'm an Assistant Manager and Digital Solutions Engineer at JSW Infrastructure, where I've spent the last three years building the systems our ports run on.",
-    "I like to start on the ground. I sit with the people doing the work, see where their time goes, and find the spreadsheets and reports nobody enjoys making. Then I design something better and build it myself.",
-    "Most of what I make is data pipelines, ERP and SAP integrations, dashboards and, more and more, AI tools that answer questions from operations data. I'm now doing a PGPM at IIM Mumbai, so I can make the business case for a system as well as build it.",
+    "I'm an Assistant Manager and Digital Solutions Engineer at JSW Infrastructure. For three years I've been taking work that ran on paper, Excel and phone calls and turning it into software. So far that has been at ports, but the problems are the same in a plant, a warehouse or a back office.",
+    "I like to start on the ground. I sit with the people doing the work, see where their time goes, and write down what the business actually needs before anyone talks about software. That usually becomes a BRD that operations, finance and IT all agree on. Then I design the solution and build it myself.",
+    "Most of what I make is workflow apps, ERP and SAP integrations, automated reports and dashboards and, more and more, AI tools that answer questions from business data. I'm now doing a PGPM at IIM Mumbai, so I can make the business case for a system as well as build it.",
   ],
   // Headline numbers in About.
   highlights: [
@@ -351,7 +351,7 @@ export const projects = [
 // How I work: the method, in order.
 export const method = [
   { step: 'Go to the ground', text: 'Sit with the shift in-charges, finance and HSE teams and watch the work: who types what into which sheet, and where the time goes.' },
-  { step: 'Map the process', text: 'Write down the real process, the data it needs and who owns each step, before talking about software.' },
+  { step: 'Write the requirements', text: 'Map the process as it is and as it should be, the data it needs and who owns each step, and get the BRD signed off before choosing any software.' },
   { step: 'Make the business case', text: 'Put a value on the hours, errors and licences involved, and compare doing nothing, buying a product and building in-house.' },
   { step: 'Build or select', text: 'Build when the process is specific to us and we should own the data. Recommend a vendor when a product already fits.' },
   { step: 'Roll out in phases', text: 'Start at one site, fix what the users find, then replicate to the next site with the same core and local changes.' },
@@ -360,7 +360,7 @@ export const method = [
 
 // Evidence of working with stakeholders, shown under the method.
 export const leadership = [
-  'Led discovery and requirements workshops with operations, finance and HSE teams across three port sites.',
+  'Led discovery and requirements workshops with operations, finance and HSE teams across three sites, and wrote them up as BRDs and solution designs.',
   'Ran the build-versus-buy evaluation for PortBird and took it from proof of concept to production at two sites.',
   'Rolled the Digital Logbook and Headcount Dashboard out to seven JSW Infrastructure sites.',
   'Selected for the Graduate Engineer Trainee Excellence Program at MDI Gurgaon (2024).',
@@ -368,7 +368,7 @@ export const leadership = [
 
 // Capabilities, split the way a consulting team staffs them.
 export const capabilities = {
-  Advisory: ['Process mapping and discovery', 'Business cases and build versus buy', 'Vendor and solution evaluation', 'Phased multi-site rollout', 'Adoption and change management', 'Data governance and access control'],
+  Advisory: ['Requirement gathering and BRDs', 'As-is and to-be process mapping', 'Business cases and build versus buy', 'Vendor and solution evaluation', 'Phased multi-site rollout', 'Adoption and change management', 'Data governance and access control'],
 }
 
 // Technology tiles: [label, Simple Icons slug in public/icons].
@@ -399,7 +399,7 @@ export const tech = [
 export const cases = [
   {
     project: 'portbird',
-    title: 'Replacing a licensed port system with PortBird',
+    title: 'Replacing a licensed system with one built in-house',
     client: 'JSW Dharamtar Port (DPPL), then JSW JNPA Liquid Terminal',
     role: 'Discovery, business case, architecture, build and rollout',
     situation: 'Port operations, billing and reporting were split between a licensed port system, spreadsheets and separate posting to SAP and the GST portal. Daily progress and MIS reports were compiled by hand.',
@@ -411,7 +411,7 @@ export const cases = [
   },
   {
     project: 'central-dashboard',
-    title: 'One live view of every port',
+    title: 'One live view across every site',
     client: 'JSW Infrastructure leadership',
     role: 'Design and build',
     situation: 'Each port reported through its own systems and spreadsheets, so getting a picture across the network meant collecting numbers from every site.',

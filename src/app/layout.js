@@ -8,13 +8,13 @@ const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variabl
 // One place for the public URL.
 const SITE = 'https://www.shubhamshnd.in'
 const description =
-  'Digital transformation for ports and maritime: port ERP, SAP and GST integration, multi-site dashboards and AI on operations data, built and rolled out across seven JSW Infrastructure sites. Open to port and maritime digital advisory roles.'
+  'Digital transformation and process automation: turning manual processes into working systems, from requirements and BRDs to ERP and SAP integration, automated reporting, dashboards and AI. Built and rolled out across seven JSW Infrastructure sites. Open to digital transformation and process automation consulting roles.'
 
 export const metadata = {
   metadataBase: new URL(SITE),
-  title: 'Shubham Shinde · Digital Transformation, Ports & Maritime',
+  title: 'Shubham Shinde · Digital Transformation & Process Automation',
   description,
-  openGraph: { title: 'Shubham Shinde · Digital Transformation, Ports & Maritime', description, url: SITE, type: 'website' },
+  openGraph: { title: 'Shubham Shinde · Digital Transformation & Process Automation', description, url: SITE, type: 'website' },
   twitter: { card: 'summary_large_image' },
 }
 
