@@ -57,7 +57,7 @@ function caption(stop) {
   const p = journey.find((j) => j.id === stop)
   if (p) return [p.port, p.place]
   if (stop === 'network') return ['JSW Infrastructure', 'Ports and terminals in India and the UAE']
-  return ['Route', `Scroll to start at ${journey[0].port}`]
+  return ['Scroll down ↓']
 }
 
 function GlobePanel({ stop, size = 'min(560px, calc(100vh - 400px), 100%)' }) {
@@ -67,7 +67,7 @@ function GlobePanel({ stop, size = 'min(560px, calc(100vh - 400px), 100%)' }) {
       <Globe stop={stop} />
       <figcaption className="mt-2 text-center font-mono text-xs" aria-live="polite">
         <span className="text-accent">{title}</span>
-        <span className="text-ink/70"> · {sub}</span>
+        {sub && <span className="text-ink/70"> · {sub}</span>}
       </figcaption>
     </figure>
   )
