@@ -329,7 +329,7 @@ function Commits({ data }) {
   const cols = Math.max(...data.days.map((d) => d.col)) + 1
   return (
     <div className="mt-12">
-      <h3 className="font-mono text-xs uppercase tracking-widest text-head">Code, last 12 months</h3>
+      <h3 className="font-mono text-xs uppercase tracking-widest text-head">Code, last 6 months</h3>
       <div className="mt-4 grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
         {data.days.map((d) => (
           <span

@@ -12,8 +12,11 @@ async function commits() {
       level: +m[5],
       tip: tips[m[2]] || m[1],
     }))
-    const total = html.match(/([\d,]+)\s+contributions\s+in the last year/)?.[1]
-    return days.length && total ? { days, total } : null
+    // Keep the last 26 weeks and add up their counts from the tooltips ("5 contributions on …").
+    const last = Math.max(...days.map((d) => d.col))
+    const recent = days.filter((d) => d.col > last - 26).map((d) => ({ ...d, col: d.col - (last - 25) }))
+    const total = recent.reduce((n, d) => n + (parseInt(d.tip) || 0), 0)
+    return recent.length ? { days: recent, total: total.toLocaleString('en-IN') } : null
   } catch {
     return null
   }
