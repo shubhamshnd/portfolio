@@ -166,7 +166,7 @@ export default function Globe({ stop, shift = 0, className = '' }) {
         if (!name) return
         const big = main ? 12 : 10
         ctx.font = `${main ? 500 : 400} ${big}px ${mono}`
-        const text = name.toUpperCase()
+        const text = name.replace(/^JSW /, '').toUpperCase() // the caption already says JSW
         const tw = ctx.measureText(text).width
         const coords = main ? `${loc[0].toFixed(2)}°N ${loc[1].toFixed(2)}°E` : ''
         const bw = Math.max(tw, coords ? tw * 0.85 : 0)

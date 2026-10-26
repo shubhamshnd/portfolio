@@ -38,7 +38,7 @@ export const profile = {
 export const journey = [
   {
     id: 'dharamtar',
-    port: 'Dharamtar Port',
+    port: 'JSW Dharamtar Port',
     place: 'Raigad, Maharashtra',
     location: [18.7, 73.03],
     when: 'Aug 2023',
@@ -58,7 +58,7 @@ export const journey = [
   },
   {
     id: 'jaigarh',
-    port: 'Jaigarh Port',
+    port: 'JSW Jaigarh Port',
     place: 'Ratnagiri, Maharashtra',
     location: [17.3, 73.22],
     when: '',
@@ -68,7 +68,7 @@ export const journey = [
   },
   {
     id: 'swpl',
-    port: 'South West Port Limited',
+    port: 'JSW South West Port',
     place: 'Mormugao, Goa',
     location: [15.41, 73.8],
     when: '',
@@ -78,7 +78,7 @@ export const journey = [
   },
   {
     id: 'mangalore',
-    port: 'Mangalore Port Limited',
+    port: 'JSW Mangalore Port',
     place: 'Panambur, Karnataka',
     location: [12.93, 74.81],
     when: '',
@@ -90,11 +90,11 @@ export const journey = [
 
 // Shown together at the "network" stop.
 export const network = [
-  { name: 'PNP Port', location: [18.78, 72.94] },
-  { name: 'Paradip', location: [20.26, 86.67] },
-  { name: 'Ennore', location: [13.25, 80.33] },
-  { name: 'Fujairah', location: [25.12, 56.36] },
-  { name: 'Dibba', location: [25.62, 56.27] },
+  { name: 'JSW PNP Port', location: [18.78, 72.94] },
+  { name: 'JSW Paradip', location: [20.26, 86.67] },
+  { name: 'JSW Ennore', location: [13.25, 80.33] },
+  { name: 'JSW Fujairah', location: [25.12, 56.36] },
+  { name: 'JSW Dibba', location: [25.62, 56.27] },
 ]
 
 // ports: journey ids where the project runs ('network' = the JSW Infrastructure stop); listed under them on the route.
@@ -238,7 +238,7 @@ export const projects = [
     areas: ['Data'],
     name: 'SWPL Operations Dashboard',
     ports: ['swpl'],
-    summary: 'Cargo, rake and vessel tracking for South West Port: stock by product, live rake loading, berth-wise discharge and dispatch, turnaround and demurrage.',
+    summary: 'Cargo, rake and vessel tracking for JSW South West Port: stock by product, live rake loading, berth-wise discharge and dispatch, turnaround and demurrage.',
     stats: [],
     stack: [],
     media: [
@@ -377,7 +377,7 @@ export const cases = [
   {
     project: 'portbird',
     title: 'Replacing a licensed port system with PortBird',
-    client: 'Dharamtar Port (DPPL), then JSW JNPA Liquid Terminal',
+    client: 'JSW Dharamtar Port (DPPL), then JSW JNPA Liquid Terminal',
     role: 'Discovery, business case, architecture, build and rollout',
     situation: 'Port operations, billing and reporting were split between a licensed port system, spreadsheets and separate posting to SAP and the GST portal. Daily progress and MIS reports were compiled by hand.',
     diagnosis: 'Most of the effort went into moving the same data between systems. The licensed product did not follow how this port runs its barges and MBCs, and the port did not own its data.',
