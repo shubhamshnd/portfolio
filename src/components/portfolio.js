@@ -5,7 +5,7 @@ import { flushSync } from 'react-dom'
 import Globe from '@/components/globe'
 import Backdrop from '@/components/backdrop'
 import { track } from '@vercel/analytics'
-import { profile, journey, network, projects, method, leadership, capabilities, cases } from '@/data/site'
+import { profile, journey, network, projects, method, leadership, capabilities, cases, testimonials } from '@/data/site'
 
 const NAV = [
   { id: 'about', label: 'About' },
@@ -530,6 +530,25 @@ export default function Portfolio() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section id="words" data-stop="network" data-nav="contact" className="mt-32 scroll-mt-16">
+          <h2 className="label">What people say</h2>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {testimonials.map((t, i) => (
+              <figure key={t.name} className={`reveal flex flex-col rounded-lg border border-line bg-panel p-5 ${i === 0 || i === testimonials.length - 1 ? 'sm:col-span-2' : ''}`}>
+                <blockquote className={`flex-1 leading-relaxed text-head ${i === 0 ? 'text-lg' : 'text-sm'}`}>
+                  <span className="mr-1 font-mono text-accent" aria-hidden="true">“</span>
+                  {t.quote}
+                </blockquote>
+                <figcaption className="mt-4 border-t border-line pt-3">
+                  <p className="font-medium text-head">{t.name}</p>
+                  <p className="text-xs">{t.title}</p>
+                  <p className="mt-1 font-mono text-[11px] text-ink/60">{t.note} · via LinkedIn</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </section>
 
         <section id="contact" data-stop="network" data-nav="contact" className="mt-32 min-h-[50vh] scroll-mt-16 pb-24">

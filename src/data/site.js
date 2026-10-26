@@ -423,3 +423,31 @@ export const cases = [
     impact: ['An answer with a chart in one step', 'Every number comes with the query that produced it'],
   },
 ]
+
+// LinkedIn recommendations, quoted as written (trims marked with an ellipsis).
+export const testimonials = [
+  {
+    quote: 'His ability to understand the requirements of end users, business stakeholders, and top management is truly exceptional. … One of his standout contributions was the development of a comprehensive Management Port Dashboard, which he delivered within a tight timeline. It was not only technically sound but also strategically valuable for decision-making.',
+    name: 'Sambasiva Rao Gattu',
+    title: 'Head IT · Maritime Digital Transformation Leader',
+    note: 'Worked together at JSW Infrastructure, Aug 2025',
+  },
+  {
+    quote: 'What makes Shubham special is his disciplined work ethic and a go-getter attitude. He doesn’t shy away from complexity—instead, he thrives in it.',
+    name: 'Manish Gupta',
+    title: 'Executive Vice President, JSW Infrastructure',
+    note: 'Senior colleague, Jul 2025',
+  },
+  {
+    quote: 'His contributions in digitalization, smart port technologies, and business applications are truly commendable. A self reliant developer and tester, Shubham consistently delivers quality digital solutions.',
+    name: 'Arabinda Moharana',
+    title: 'IT Infrastructure Head · Ports, Logistics, Oil & Gas',
+    note: 'Same team, Jul 2025',
+  },
+  {
+    quote: 'Good IT resource and takes initiative to business requirements.',
+    name: 'Karun Kant Dave',
+    title: 'Group CEO · Infrastructure, Mining & Ports',
+    note: 'Senior colleague, Oct 2026',
+  },
+]
