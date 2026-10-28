@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import Globe from '@/components/globe'
 import Beam from '@/components/beam'
@@ -61,11 +61,13 @@ function caption(stop) {
   return ['Scroll down ↓']
 }
 
+// On Work the sphere gallery takes over, so the globe slides off to the left.
 function GlobePanel({ stop, size = 'min(560px, calc(100vh - 400px), 100%)' }) {
+  const work = stop === 'work'
   const [title, sub] = caption(stop)
   return (
-    <figure className="mx-auto w-full" style={{ maxWidth: size }}>
-      <Globe stop={stop} />
+    <figure className={`mx-auto w-full transition duration-700 ${work ? 'pointer-events-none -translate-x-1/2 opacity-0' : ''}`} style={{ maxWidth: size }}>
+      <Globe stop={work ? 'network' : stop} />
       <figcaption className="mt-2 text-center font-mono text-xs" aria-live="polite">
         <span className="text-accent">{title}</span>
         {sub && <span className="text-ink/70"> · {sub}</span>}
@@ -118,9 +120,163 @@ function Thumb({ project, controls, ...rest }) {
   )
 }
 
+// Every project screen on a sphere, in CSS 3D. Built from the data: one tile per screen, sized so the
+// sphere stays evenly covered however many there are. A filter stops the spin, lights up its screens
+// and moves them to the spots facing you. Drag to spin; click a screen to open it.
+const R = 40 // sphere radius, in % of the container width (cqw)
+
+function Sphere({ area, onOpen }) {
+  const tiles = useMemo(() => projects.flatMap((p) => p.media.map((src, k) => ({ p, src, k }))), [])
+  const n = tiles.length
+  const w = R * Math.sqrt(10 / n) // tiles cover a little under half the surface
+  // Fibonacci sphere: n spots spread evenly, as latitude and longitude. assign[i] is tile i's spot.
+  const slots = useMemo(() => tiles.map((_, i) => ({ lat: (Math.asin(1 - (2 * (i + 0.5)) / n) * 180) / Math.PI, lon: (i * 137.508) % 360 })), [tiles, n])
+  const [assign, setAssign] = useState(() => tiles.map((_, i) => i))
+  const pos = assign.map((j) => slots[j])
+  const hit = (t) => area === 'All' || t.p.areas?.includes(area)
+  const ring = useRef(null)
+  const els = useRef([])
+  const s = useRef({ yaw: 0, pitch: -12, vy: 0, vp: 0, drag: null, moved: 0, aim: null }).current
+  const latest = useRef({ hit, pos })
+  latest.current = { hit, pos }
+  const [front, setFront] = useState(0)
+
+  // A filter holds the sphere still and gives its screens the spots nearest the viewer, nearest first.
+  useEffect(() => {
+    s.vy = s.vp = 0
+    if (area === 'All') {
+      s.aim = null
+      return setAssign(tiles.map((_, i) => i))
+    }
+    s.aim = [s.yaw, s.pitch]
+    const facing = (j) => new DOMMatrix(`rotateX(${s.pitch}deg) rotateY(${s.yaw}deg) rotateY(${slots[j].lon}deg) rotateX(${slots[j].lat}deg)`).m33
+    const order = slots.map((_, j) => j).sort((a, b) => facing(b) - facing(a))
+    const ids = tiles.map((_, i) => i)
+    const next = []
+    ;[...ids.filter((i) => hit(tiles[i])), ...ids.filter((i) => !hit(tiles[i]))].forEach((i, k) => (next[i] = order[k]))
+    setAssign(next)
+  }, [area]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+    let raf
+    let last = performance.now()
+    let best = -1
+    const frame = (now) => {
+      raf = requestAnimationFrame(frame)
+      const dt = Math.min((now - last) / 1000, 0.05)
+      last = now
+      if (!s.drag) {
+        if (s.aim) {
+          const k = still ? 1 : 1 - Math.exp(-4 * dt)
+          s.yaw += ((((s.aim[0] - s.yaw + 540) % 360) + 360) % 360 - 180) * k
+          s.pitch += (s.aim[1] - s.pitch) * k
+        } else {
+          s.yaw += (s.vy - (still ? 0 : 5)) * dt
+          s.pitch += s.vp * dt
+        }
+        s.vy *= Math.exp(-3 * dt)
+        s.vp *= Math.exp(-3 * dt)
+      }
+      ring.current.style.transform = `rotateX(${s.pitch}deg) rotateY(${s.yaw}deg)`
+      let top = -2
+      let ti = 0
+      tiles.forEach((t, i) => {
+        const el = els.current[i]
+        if (!el) return
+        const p = latest.current.pos[i]
+        const z = new DOMMatrix(`rotateX(${s.pitch}deg) rotateY(${s.yaw}deg) rotateY(${p.lon}deg) rotateX(${p.lat}deg)`).m33
+        const on = latest.current.hit(t)
+        el.style.opacity = on ? 0.3 + 0.7 * Math.max(z, 0) : 0.06 + 0.1 * Math.max(z, 0)
+        el.style.filter = `brightness(${on ? 0.35 + 0.65 * Math.max(z, 0) : 0.4})`
+        el.style.pointerEvents = on && z > 0.5 ? 'auto' : 'none'
+        if (on && z > top) [top, ti] = [z, i]
+      })
+      if (ti !== best) setFront((best = ti))
+    }
+    const move = (e) => {
+      if (!s.drag) return
+      const now = performance.now()
+      const dx = e.clientX - s.drag.x
+      const dy = e.clientY - s.drag.y
+      const dt = Math.max((now - s.drag.t) / 1000, 0.008)
+      s.moved += Math.abs(dx) + Math.abs(dy)
+      s.yaw += dx * 0.3
+      s.pitch = Math.max(-70, Math.min(70, s.pitch - dy * 0.3))
+      s.vy = (dx * 0.3) / dt
+      s.vp = (-dy * 0.3) / dt
+      s.drag = { x: e.clientX, y: e.clientY, t: now }
+    }
+    const up = () => (s.drag = null)
+    addEventListener('pointermove', move)
+    addEventListener('pointerup', up)
+    addEventListener('pointercancel', up)
+    raf = requestAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(raf)
+      removeEventListener('pointermove', move)
+      removeEventListener('pointerup', up)
+      removeEventListener('pointercancel', up)
+    }
+  }, [tiles, s])
+
+  const f = tiles[front]
+  return (
+    <div>
+      <div
+        className="relative mx-auto aspect-square w-full max-w-[85vh] cursor-grab select-none active:cursor-grabbing [container-type:inline-size] [&_img]:pointer-events-none"
+        style={{ perspective: '1400px', touchAction: 'pan-y' }}
+        onPointerDown={(e) => {
+          s.drag = { x: e.clientX, y: e.clientY, t: performance.now() }
+          s.moved = 0
+          s.aim = null
+        }}
+      >
+        <div ref={ring} className="absolute left-1/2 top-1/2" style={{ transformStyle: 'preserve-3d' }}>
+          {tiles.map((t, i) => (
+            <button
+              key={`${t.p.id}-${t.k}`}
+              ref={(el) => (els.current[i] = el)}
+              onClick={() => s.moved < 6 && onOpen(t.p, t.k)}
+              aria-label={`Open ${t.p.name}`}
+              className={`absolute block aspect-video overflow-hidden rounded-sm border bg-panel ${area !== 'All' && hit(t) ? 'border-accent' : 'border-line'}`}
+              style={{
+                width: `${w}cqw`,
+                left: `${-w / 2}cqw`,
+                top: `${(-w * 9) / 32}cqw`,
+                transform: `rotateY(${pos[i].lon}deg) rotateX(${pos[i].lat}deg) translateZ(${R}cqw)`,
+                transition: 'transform 1s cubic-bezier(.2,.8,.2,1)',
+              }}
+            >
+              <Media src={t.src} alt={t.p.name} />
+            </button>
+          ))}
+        </div>
+      </div>
+      {f && (
+        <div className="mx-auto mt-2 max-w-xl border-t border-line pt-4">
+          <div className="flex items-baseline justify-between gap-4">
+            <h3 className="text-xl font-medium text-head">{f.p.name}</h3>
+            <span className="font-mono text-xs text-ink/60">
+              {String(front + 1).padStart(2, '0')} / {n}
+            </span>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed">{f.p.summary}</p>
+          <div className="mt-3 flex items-center justify-between gap-4">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-ink/60">{f.p.areas?.join(' · ')}</p>
+            <button onClick={() => onOpen(f.p, f.k)} className="font-mono text-xs uppercase tracking-widest text-accent hover:underline">
+              Open screens →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Viewer({ project, onClose }) {
   const ref = useRef(null)
-  const [i, setI] = useState(0)
+  const [i, setI] = useState(project.start ?? 0)
   useLayoutEffect(() => ref.current.showModal(), [])
   const n = project.media.length
   const src = project.media[i]
@@ -537,7 +693,7 @@ export default function Portfolio({ commits }) {
           </div>
         </section>
 
-        <section id="work" data-stop="network" data-nav="work" className="mt-24 scroll-mt-16">
+        <section id="work" data-stop="work" data-nav="work" className="mt-24 scroll-mt-16">
           <h2 className="label">Work</h2>
           <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter work">
             {AREAS.map((a) => (
@@ -551,23 +707,7 @@ export default function Portfolio({ commits }) {
               </button>
             ))}
           </div>
-          <ul className="grid gap-6 sm:grid-cols-2">
-            {projects.filter((p) => p.media.length && (area === 'All' || p.areas?.includes(area))).map((p) => (
-              <li key={p.id}>
-                <button onClick={() => openProject(p)} className="group w-full text-left">
-                  <Thumb
-                    project={p}
-                    style={{ viewTransitionName: selected === p.id && open?.id !== p.id ? `p-${p.id}` : undefined }}
-                  />
-                  <h3 className="mt-3 font-medium text-head transition-colors group-hover:text-accent">{p.name} →</h3>
-                  <p className="mt-1 text-sm">{p.summary}</p>
-                  <Stats items={p.stats} />
-                  <Sites items={p.sites} />
-                  <p className="mt-2 font-mono text-[11px] uppercase tracking-widest text-ink/60">{p.areas?.join(' · ')}</p>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <Sphere area={area} onOpen={(p, k) => openProject({ ...p, start: k }, false)} />
         </section>
 
         <section id="words" data-stop="network" data-nav="contact" className="mt-32 scroll-mt-16">
