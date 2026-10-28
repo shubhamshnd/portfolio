@@ -120,37 +120,44 @@ function Thumb({ project, controls, ...rest }) {
   )
 }
 
-// Every project screen on a sphere, in CSS 3D. Built from the data: one tile per screen, sized so the
-// sphere stays evenly covered however many there are. A filter stops the spin, lights up its screens
-// and moves them to the spots facing you. Drag to spin; click a screen to open it.
-const R = 40 // sphere radius, in % of the container width (cqw)
+// Every project screen on a barrel of stacked rings, in CSS 3D. Built from the data: the number of rows
+// and the card size follow the number of screens. A filter stops the spin, lights up its screens and
+// moves them to the spots facing you. Drag to spin; click a screen to open it.
+const R = 34 // barrel radius, in % of the container width (cqw)
 
-function Sphere({ area, onOpen }) {
+function Barrel({ area, onOpen }) {
   const tiles = useMemo(() => projects.flatMap((p) => p.media.map((src, k) => ({ p, src, k }))), [])
   const n = tiles.length
-  const w = R * Math.sqrt(10 / n) // tiles cover a little under half the surface
-  // Fibonacci sphere: n spots spread evenly, as latitude and longitude. assign[i] is tile i's spot.
-  const slots = useMemo(() => tiles.map((_, i) => ({ lat: (Math.asin(1 - (2 * (i + 0.5)) / n) * 180) / Math.PI, lon: (i * 137.508) % 360 })), [tiles, n])
+  const rows = Math.max(1, Math.round(n / 14))
+  const per = Math.ceil(n / rows)
+  const w = 2 * R * Math.tan(Math.PI / per) - 0.8 // cards just touch round the ring, with a small gap
+  const h = (w * 9) / 16
+  // Spots: per cards a row, alternate rows offset by half a card like brickwork.
+  const slots = useMemo(
+    () => tiles.map((_, j) => ({ ang: ((j % per) + (Math.floor(j / per) % 2) / 2) * (360 / per), y: (Math.floor(j / per) - (rows - 1) / 2) * (h + 1) })),
+    [tiles, per, rows, h],
+  )
   const [assign, setAssign] = useState(() => tiles.map((_, i) => i))
   const pos = assign.map((j) => slots[j])
   const hit = (t) => area === 'All' || t.p.areas?.includes(area)
   const ring = useRef(null)
   const els = useRef([])
-  const s = useRef({ yaw: 0, pitch: -12, vy: 0, vp: 0, drag: null, moved: 0, aim: null }).current
-  const latest = useRef({ hit, pos })
+  const s = useRef({ yaw: 0, vy: 0, drag: null, moved: 0, aim: null }).current
+  const latest = useRef({})
   latest.current = { hit, pos }
   const [front, setFront] = useState(0)
+  const facing = (slot) => Math.cos(((slot.ang + s.yaw) * Math.PI) / 180)
 
-  // A filter holds the sphere still and gives its screens the spots nearest the viewer, nearest first.
+  // A filter holds the barrel still and gives its screens the spots nearest the viewer, middle row first.
   useEffect(() => {
-    s.vy = s.vp = 0
+    s.vy = 0
     if (area === 'All') {
       s.aim = null
       return setAssign(tiles.map((_, i) => i))
     }
-    s.aim = [s.yaw, s.pitch]
-    const facing = (j) => new DOMMatrix(`rotateX(${s.pitch}deg) rotateY(${s.yaw}deg) rotateY(${slots[j].lon}deg) rotateX(${slots[j].lat}deg)`).m33
-    const order = slots.map((_, j) => j).sort((a, b) => facing(b) - facing(a))
+    s.aim = s.yaw
+    const score = (j) => facing(slots[j]) - 0.01 * Math.abs(slots[j].y)
+    const order = slots.map((_, j) => j).sort((a, b) => score(b) - score(a))
     const ids = tiles.map((_, i) => i)
     const next = []
     ;[...ids.filter((i) => hit(tiles[i])), ...ids.filter((i) => !hit(tiles[i]))].forEach((i, k) => (next[i] = order[k]))
@@ -167,30 +174,24 @@ function Sphere({ area, onOpen }) {
       const dt = Math.min((now - last) / 1000, 0.05)
       last = now
       if (!s.drag) {
-        if (s.aim) {
-          const k = still ? 1 : 1 - Math.exp(-4 * dt)
-          s.yaw += ((((s.aim[0] - s.yaw + 540) % 360) + 360) % 360 - 180) * k
-          s.pitch += (s.aim[1] - s.pitch) * k
-        } else {
-          s.yaw += (s.vy - (still ? 0 : 5)) * dt
-          s.pitch += s.vp * dt
-        }
+        if (s.aim != null) s.yaw += (s.aim - s.yaw) * (still ? 1 : 1 - Math.exp(-4 * dt))
+        else s.yaw += (s.vy - (still ? 0 : 6)) * dt
         s.vy *= Math.exp(-3 * dt)
-        s.vp *= Math.exp(-3 * dt)
       }
-      ring.current.style.transform = `rotateX(${s.pitch}deg) rotateY(${s.yaw}deg)`
+      ring.current.style.transform = `rotateX(-6deg) rotateY(${s.yaw}deg)`
       let top = -2
       let ti = 0
       tiles.forEach((t, i) => {
         const el = els.current[i]
         if (!el) return
         const p = latest.current.pos[i]
-        const z = new DOMMatrix(`rotateX(${s.pitch}deg) rotateY(${s.yaw}deg) rotateY(${p.lon}deg) rotateX(${p.lat}deg)`).m33
+        const z = facing(p)
         const on = latest.current.hit(t)
-        el.style.opacity = on ? 0.3 + 0.7 * Math.max(z, 0) : 0.06 + 0.1 * Math.max(z, 0)
+        el.style.opacity = on ? 0.35 + 0.65 * Math.max(z, 0) : 0.06 + 0.1 * Math.max(z, 0)
         el.style.filter = `brightness(${on ? 0.35 + 0.65 * Math.max(z, 0) : 0.4})`
-        el.style.pointerEvents = on && z > 0.5 ? 'auto' : 'none'
-        if (on && z > top) [top, ti] = [z, i]
+        el.style.pointerEvents = on && z > 0.6 ? 'auto' : 'none'
+        const score = z - 0.01 * Math.abs(p.y)
+        if (on && score > top) [top, ti] = [score, i]
       })
       if (ti !== best) setFront((best = ti))
     }
@@ -198,13 +199,9 @@ function Sphere({ area, onOpen }) {
       if (!s.drag) return
       const now = performance.now()
       const dx = e.clientX - s.drag.x
-      const dy = e.clientY - s.drag.y
-      const dt = Math.max((now - s.drag.t) / 1000, 0.008)
-      s.moved += Math.abs(dx) + Math.abs(dy)
-      s.yaw += dx * 0.3
-      s.pitch = Math.max(-70, Math.min(70, s.pitch - dy * 0.3))
-      s.vy = (dx * 0.3) / dt
-      s.vp = (-dy * 0.3) / dt
+      s.moved += Math.abs(dx) + Math.abs(e.clientY - s.drag.y)
+      s.yaw += dx * 0.2
+      s.vy = (dx * 0.2) / Math.max((now - s.drag.t) / 1000, 0.008)
       s.drag = { x: e.clientX, y: e.clientY, t: now }
     }
     const up = () => (s.drag = null)
@@ -218,14 +215,14 @@ function Sphere({ area, onOpen }) {
       removeEventListener('pointerup', up)
       removeEventListener('pointercancel', up)
     }
-  }, [tiles, s])
+  }, [tiles, s]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const f = tiles[front]
   return (
     <div>
       <div
-        className="relative mx-auto aspect-square w-full max-w-[85vh] cursor-grab select-none active:cursor-grabbing [container-type:inline-size] [&_img]:pointer-events-none"
-        style={{ perspective: '1400px', touchAction: 'pan-y' }}
+        className="relative w-full cursor-grab select-none active:cursor-grabbing [container-type:inline-size] [&_img]:pointer-events-none"
+        style={{ height: `calc(${rows} * ${h * 1.25}cqw + 4cqw)`, perspective: '1400px', touchAction: 'pan-y' }}
         onPointerDown={(e) => {
           s.drag = { x: e.clientX, y: e.clientY, t: performance.now() }
           s.moved = 0
@@ -243,8 +240,8 @@ function Sphere({ area, onOpen }) {
               style={{
                 width: `${w}cqw`,
                 left: `${-w / 2}cqw`,
-                top: `${(-w * 9) / 32}cqw`,
-                transform: `rotateY(${pos[i].lon}deg) rotateX(${pos[i].lat}deg) translateZ(${R}cqw)`,
+                top: `${-h / 2}cqw`,
+                transform: `translateY(${pos[i].y}cqw) rotateY(${pos[i].ang}deg) translateZ(${R}cqw)`,
                 transition: 'transform 1s cubic-bezier(.2,.8,.2,1)',
               }}
             >
@@ -254,7 +251,7 @@ function Sphere({ area, onOpen }) {
         </div>
       </div>
       {f && (
-        <div className="mx-auto mt-2 max-w-xl border-t border-line pt-4">
+        <div className="mx-auto mt-4 max-w-2xl border-t border-line pt-4">
           <div className="flex items-baseline justify-between gap-4">
             <h3 className="text-xl font-medium text-head">{f.p.name}</h3>
             <span className="font-mono text-xs text-ink/60">
@@ -693,7 +690,13 @@ export default function Portfolio({ commits }) {
           </div>
         </section>
 
-        <section id="work" data-stop="work" data-nav="work" className="mt-24 scroll-mt-16">
+        {/* Full width on desktop: reaches back over the left column (same width as this one, plus the gap). */}
+        <section
+          id="work"
+          data-stop="work"
+          data-nav="work"
+          className="relative z-20 mt-24 scroll-mt-0 overflow-hidden bg-bg lg:-ml-[calc(100%+3rem)] lg:w-[calc(200%+3rem)] lg:border-y lg:border-line lg:px-8 lg:py-10"
+        >
           <h2 className="label">Work</h2>
           <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter work">
             {AREAS.map((a) => (
@@ -707,7 +710,7 @@ export default function Portfolio({ commits }) {
               </button>
             ))}
           </div>
-          <Sphere area={area} onOpen={(p, k) => openProject({ ...p, start: k }, false)} />
+          <Barrel area={area} onOpen={(p, k) => openProject({ ...p, start: k }, false)} />
         </section>
 
         <section id="words" data-stop="network" data-nav="contact" className="mt-32 scroll-mt-16">
