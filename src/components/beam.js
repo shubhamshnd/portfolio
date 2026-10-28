@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react'
 
 // Amber light that falls from the nav onto the globe, runs round its rim and pours off the sides.
-// One WebGL2 fragment shader over the header; nothing is drawn inside the globe. Desktop only.
+// One WebGL2 fragment shader on a fixed layer between the backdrop and the page, so the glow can spread
+// behind both columns; nothing is drawn inside the globe. Desktop only.
 
 const VERT = `#version 300 es
 in vec2 a;
@@ -93,6 +94,9 @@ void main() {
   float near = exp(-max(d, 0.0) / 70.0);
   col += (AMBER * 0.22 * exp(-adx / 45.0) * step(p.y, c.y) + SEA * 0.08) * smoke * near * run;
 
+  // Fade out before the viewport edges so the glow never ends in a line.
+  col *= smoothstep(0.0, 90.0, p.x) * smoothstep(0.0, 90.0, uSize.x - p.x) * smoothstep(0.0, 60.0, uSize.y - p.y);
+
   col = 1.0 - exp(-col);
   o = vec4(col, max(col.r, max(col.g, col.b)));
 }`
@@ -107,7 +111,6 @@ export default function Beam({ stop }) {
 
   useEffect(() => {
     const el = canvas.current
-    const header = el.parentElement
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const gl = el.getContext('webgl2', { premultipliedAlpha: true, antialias: false })
     if (!gl) return
@@ -134,12 +137,12 @@ export default function Beam({ stop }) {
     let raf
     const frame = (now) => {
       raf = requestAnimationFrame(frame)
-      // ponytail: measures every frame (two rects); the header is sticky, so this is cheap and never stale.
-      const g = header.querySelector('canvas.lens')
+      // ponytail: measures every frame (a few rects); the header is sticky, so this is cheap and never stale.
+      const g = document.querySelector('header canvas.lens')
       if (!g) return
-      const h = header.getBoundingClientRect()
+      const h = el.getBoundingClientRect()
       const r = g.getBoundingClientRect()
-      const nav = header.querySelector('nav')
+      const nav = document.querySelector('header nav')
       const dpr = Math.min(devicePixelRatio, 1.5)
       const w = Math.round(h.width * dpr)
       const ht = Math.round(h.height * dpr)
@@ -162,5 +165,5 @@ export default function Beam({ stop }) {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  return <canvas ref={canvas} className="pointer-events-none absolute inset-0 -z-10 h-full w-full" aria-hidden="true" />
+  return <canvas ref={canvas} className="pointer-events-none fixed inset-0 z-[1] h-full w-full" aria-hidden="true" />
 }
