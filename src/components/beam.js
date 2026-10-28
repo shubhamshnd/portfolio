@@ -74,7 +74,7 @@ void main() {
   float th = atan(adx, -q.y);           // 0 at the top, PI at the bottom
   float s = th * R;                     // arc length from the top
   float reveal = 1.0 - smoothstep(run * 3.2 - 0.45, run * 3.2 + 0.05, th);
-  float streak = 0.5 + 0.9 * noise(vec2(d * 0.05, s / 22.0 - t * 2.2));
+  float streak = 0.5 + 0.9 * noise(vec2(d * 0.05, s / 22.0 - t * 3.0));
   float thin = exp(-sq(max(d, 0.0) / (1.4 + 0.008 * s)));
   float fan = exp(-max(d, 0.0) / (5.0 + 0.08 * s));
   float fade = exp(-sq(th / 1.7)) + 0.2 * exp(-sq((th - 2.5) / 0.5));
@@ -85,7 +85,7 @@ void main() {
   float side = adx - R;
   float drop = q.y;
   float sheet = exp(-sq(side / (2.0 + 0.06 * max(drop, 0.0)))) * smoothstep(0.0, 40.0, drop) * exp(-drop / (0.8 * R));
-  float rain = 0.45 + 0.9 * noise(vec2(side * 0.25, drop / 16.0 - t * 3.0));
+  float rain = 0.45 + 0.9 * noise(vec2(side * 0.25, drop / 22.0 - t * 7.0));
   col += mix(AMBER, EMBER, 0.5) * 1.3 * sheet * rain * pour * breathe;
 
   // Haze: slow smoke, lit amber near the beam and the rim, blue further out.
