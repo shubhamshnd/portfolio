@@ -78,7 +78,8 @@ html:has(dialog[open]) {
 
 /* Soft round edge so a zoomed-in globe reads as a lens, not a clipped square. */
 .lens {
-  mask-image: radial-gradient(circle closest-side, #000 82%, transparent 100%);
+  /* Crisp edge at 0.425 of the width: the radius the beam's rim light follows (beam.js). */
+  mask-image: radial-gradient(circle closest-side, #000 84.5%, transparent 85%);
 }
 
 .carousel-btn {

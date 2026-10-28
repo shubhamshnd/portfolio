@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import Globe from '@/components/globe'
+import Beam from '@/components/beam'
 import Backdrop from '@/components/backdrop'
 import { track } from '@vercel/analytics'
 import { profile, journey, network, projects, method, leadership, capabilities, tech, cases, testimonials } from '@/data/site'
@@ -387,6 +388,7 @@ export default function Portfolio({ commits }) {
         {...(desktop === false && { 'data-stop': 'about', 'data-nav': 'top' })}
         className="relative z-10 flex min-h-[72svh] flex-col pb-10 pt-16 lg:sticky lg:top-0 lg:h-screen lg:min-h-0 lg:w-1/2 lg:pb-12 lg:pt-12"
       >
+        {desktop && <Beam stop={stop} />}
         <h1 className="text-4xl font-bold tracking-tight text-head sm:text-5xl">{profile.name}</h1>
         <h2 className="mt-3 text-lg font-medium text-head">{profile.title}</h2>
         <p className="mt-1 font-mono text-sm text-accent">{profile.domains}</p>
