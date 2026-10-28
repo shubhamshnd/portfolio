@@ -222,7 +222,7 @@ function Barrel({ area, onOpen }) {
     <div>
       <div
         className="relative w-full cursor-grab select-none active:cursor-grabbing [container-type:inline-size] [&_img]:pointer-events-none"
-        style={{ height: `calc(${rows} * ${h * 1.25}cqw + 4cqw)`, perspective: '1400px', touchAction: 'pan-y' }}
+        style={{ height: `calc(${rows} * ${h * 1.12}cqw + 3cqw)`, perspective: '1400px', touchAction: 'pan-y' }}
         onPointerDown={(e) => {
           s.drag = { x: e.clientX, y: e.clientY, t: performance.now() }
           s.moved = 0
@@ -511,6 +511,30 @@ export default function Portfolio({ commits }) {
   const [selected, setSelected] = useState(null)
   const [open, setOpen] = useState(null)
   const [area, setArea] = useState('All')
+  const workRef = useRef(null)
+
+  // Desktop: while Work is pinned, its gallery slides in from the right (first 30% of the pinned scroll),
+  // holds, and slides out to the left (last 20%).
+  useEffect(() => {
+    if (!desktop) return
+    const sec = workRef.current
+    const inner = sec.querySelector(':scope > div')
+    const ease = (x) => 1 - (1 - x) ** 3
+    const on = () => {
+      const r = sec.getBoundingClientRect()
+      const p = Math.min(Math.max(-r.top / (r.height - innerHeight), 0), 1)
+      const x = p < 0.3 ? 1 - ease(p / 0.3) : p > 0.8 ? -ease((p - 0.8) / 0.2) : 0
+      inner.style.transform = `translateX(${x * 100}vw)`
+    }
+    on()
+    addEventListener('scroll', on, { passive: true })
+    addEventListener('resize', on)
+    return () => {
+      removeEventListener('scroll', on)
+      removeEventListener('resize', on)
+      inner.style.transform = ''
+    }
+  }, [desktop])
 
   // Whatever crosses the middle of the screen drives the globe and the nav.
   useEffect(() => {
@@ -691,13 +715,17 @@ export default function Portfolio({ commits }) {
         </section>
 
         {/* Full width on desktop: reaches back over the left column (same width as this one, plus the gap),
-            which fades out meanwhile. Transparent so the backdrop grid runs through. */}
+            which fades out meanwhile. Transparent so the backdrop grid runs through. On desktop it pins for a
+            while and the gallery slides in from the right, then out to the left (see the effect above). */}
         <section
-          id="work"
+          ref={workRef}
           data-stop="work"
           data-nav="work"
-          className="relative z-20 mt-24 scroll-mt-0 overflow-hidden lg:-ml-[calc(100%+3rem)] lg:w-[calc(200%+3rem)] lg:px-8 lg:py-10"
+          className="relative z-20 mt-24 lg:-ml-[calc(100%+3rem)] lg:h-[260vh] lg:w-[calc(200%+3rem)] lg:px-8"
         >
+          {/* The nav link lands where the gallery is fully in. */}
+          <span id="work" className="absolute top-0 lg:top-[70vh]" aria-hidden="true" />
+          <div className="lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:justify-center">
           <h2 className="label">Work</h2>
           <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter work">
             {AREAS.map((a) => (
@@ -712,6 +740,7 @@ export default function Portfolio({ commits }) {
             ))}
           </div>
           <Barrel area={area} onOpen={(p, k) => openProject({ ...p, start: k }, false)} />
+          </div>
         </section>
 
         <section id="words" data-stop="network" data-nav="contact" className="mt-32 scroll-mt-16">

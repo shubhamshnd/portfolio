@@ -14,10 +14,12 @@
 
 html {
   scroll-behavior: smooth;
+  /* The phone globe and the Work gallery (before it slides in) hang off the right edge; on body alone
+     this doesn't stop the window itself scrolling sideways. */
+  overflow-x: clip;
 }
 
 body {
-  /* The phone globe hangs off the right edge; never let it cause sideways scroll. */
   overflow-x: clip;
   background: rgb(var(--bg));
   color: rgb(var(--ink));
