@@ -540,7 +540,7 @@ export default function Portfolio({ commits }) {
       {desktop && <Beam stop={stop} />}
       <header
         {...(desktop === false && { 'data-stop': 'about', 'data-nav': 'top' })}
-        className="relative z-10 flex min-h-[72svh] flex-col pb-10 pt-16 lg:sticky lg:top-0 lg:h-screen lg:min-h-0 lg:w-1/2 lg:pb-12 lg:pt-12"
+        className={`relative z-10 flex min-h-[72svh] flex-col pb-10 pt-16 transition-opacity duration-500 lg:sticky lg:top-0 lg:h-screen lg:min-h-0 lg:w-1/2 lg:pb-12 lg:pt-12 ${desktop && stop === 'work' ? 'pointer-events-none opacity-0' : ''}`}
       >
         <h1 className="text-4xl font-bold tracking-tight text-head sm:text-5xl">{profile.name}</h1>
         <h2 className="mt-3 text-lg font-medium text-head">{profile.title}</h2>
@@ -690,12 +690,13 @@ export default function Portfolio({ commits }) {
           </div>
         </section>
 
-        {/* Full width on desktop: reaches back over the left column (same width as this one, plus the gap). */}
+        {/* Full width on desktop: reaches back over the left column (same width as this one, plus the gap),
+            which fades out meanwhile. Transparent so the backdrop grid runs through. */}
         <section
           id="work"
           data-stop="work"
           data-nav="work"
-          className="relative z-20 mt-24 scroll-mt-0 overflow-hidden bg-bg lg:-ml-[calc(100%+3rem)] lg:w-[calc(200%+3rem)] lg:border-y lg:border-line lg:px-8 lg:py-10"
+          className="relative z-20 mt-24 scroll-mt-0 overflow-hidden lg:-ml-[calc(100%+3rem)] lg:w-[calc(200%+3rem)] lg:px-8 lg:py-10"
         >
           <h2 className="label">Work</h2>
           <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter work">
