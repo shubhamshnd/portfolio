@@ -237,8 +237,8 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       if (anim) {
         const e = Math.min((t - anim.t0) / anim.ms, 1), k = ease(e)
         ;[cam.lon, cam.lat] = anim.rot(k)
-        // Zoom in log space, easing out a little between two far-apart close-ups.
-        cam.z = Math.exp(Math.log(anim.z0) + (Math.log(anim.z1) - Math.log(anim.z0)) * k - anim.dip * 4 * k * (1 - k))
+        // Zoom in log space. Port to port it pans straight across at close-up zoom, with no zoom-out on the way.
+        cam.z = Math.exp(Math.log(anim.z0) + (Math.log(anim.z1) - Math.log(anim.z0)) * k)
         cam.shift = anim.s0 + (anim.s1 - anim.s0) * k
         if (e < 1) more = true
         else anim = null
@@ -274,7 +274,7 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       if (v.z > 2.2 && !hi) loadLand('50m').then((f) => { hi = f; draw() })
       const from = [cam.lon, cam.lat], to = ll(v.at)
       if (still) { cam.lon = to[0]; cam.lat = to[1]; cam.z = v.z; cam.shift = sh; draw(); return }
-      anim = { t0: performance.now(), ms: 1600, rot: geoInterpolate(from, to), z0: cam.z, z1: v.z, s0: cam.shift, s1: sh, dip: Math.min(1.6, geoDistance(from, to) * 25) }
+      anim = { t0: performance.now(), ms: 1600, rot: geoInterpolate(from, to), z0: cam.z, z1: v.z, s0: cam.shift, s1: sh }
       kick()
     }
 
