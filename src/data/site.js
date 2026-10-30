@@ -5,18 +5,18 @@ export const profile = {
   title: 'Digital Transformation · Process Automation',
   domains: 'Requirements Gathering · Process Design · Automation · AI',
   // Above the fold: what I'm looking for.
-  openTo: 'Open to digital transformation and process automation consulting roles. Mumbai, Pune or remote.',
+  openTo: 'Open to Digital Transformation Consultant, Business Analyst and Solution Consultant roles in process automation. Mumbai, Pune or remote.',
   lead: 'I take manual work, work out what the business needs, and automate it.',
   // Shown as a facts row at the top of About.
   role: 'Assistant Manager, Digital Solutions Engineer',
   company: 'JSW Infrastructure',
   experience: '3+ years',
   location: 'Navi Mumbai, India',
-  education: 'PGPM (MBA), IIM Mumbai · Jul 2026 – Jul 2028',
+  education: 'PGPM (MBA), IIM Mumbai, weekend programme · Jul 2026 – Jul 2028',
   intro: [
     "I'm an Assistant Manager and Digital Solutions Engineer at JSW Infrastructure. For three years I've been taking work that ran on paper, Excel and phone calls and turning it into software. So far that has been at ports, but the problems are the same in a plant, a warehouse or a back office.",
     "I like to start on the ground. I sit with the people doing the work, see where their time goes, and write down what the business actually needs before anyone talks about software. That usually becomes a BRD that operations, finance and IT all agree on. Then I design the solution and build it myself.",
-    "Most of what I make is workflow apps, ERP and SAP integrations, automated reports and dashboards and, more and more, AI tools that answer questions from business data. I'm now doing a PGPM at IIM Mumbai, so I can make the business case for a system as well as build it.",
+    "Most of what I make is workflow apps, ERP and SAP integrations, automated reports and dashboards and, more and more, AI tools that answer questions from business data. I'm now doing a weekend PGPM at IIM Mumbai alongside my job, so I can make the business case for a system as well as build it.",
   ],
   // Headline numbers in About.
   highlights: [
@@ -365,6 +365,42 @@ export const leadership = [
   'Rolled the Digital Logbook and Headcount Dashboard out to seven JSW Infrastructure sites.',
   'Selected for the Graduate Engineer Trainee Excellence Program at MDI Gurgaon (2024).',
 ]
+
+// A made-up requirements pack, shown under How I work. Invented process, so no JSW data.
+export const sample = {
+  title: 'Visitor gate passes',
+  note: "A made-up example, not a JSW document. It's the shape of what I write before anything gets built: the process as it runs today, where it breaks, how it should run, and what the system has to do.",
+  asIs: [
+    ['Visitor', 'Emails the host asking to visit'],
+    ['Host', 'Fills a paper pass request and gets the department head to sign it'],
+    ['Admin', 'Types the request into an Excel register'],
+    ['Admin', "Emails the day's list to security"],
+    ['Security', 'Prints the list and checks ID at the gate by hand'],
+    ['Security', 'Writes in and out times in the gate register'],
+  ],
+  pains: [
+    'The same details are written or typed three times',
+    'Security cannot tell if a pass was cancelled after the list went out',
+    'Nobody can say who is inside right now',
+  ],
+  toBe: [
+    ['Host', 'Raises the request online; the visitor gets a link to add their ID details'],
+    ['Department head', 'Approves or rejects on their phone'],
+    ['System', 'Sends the visitor a QR pass for the approved date'],
+    ['Security', 'Scans the QR at the gate; in and out times are recorded'],
+  ],
+  // [id, requirement, priority (MoSCoW)]
+  requirements: [
+    ['FR-01', 'A host can raise a visit request with visitor name, company, date and purpose.', 'Must'],
+    ['FR-02', 'The department head can approve or reject a request, with a reason for rejection.', 'Must'],
+    ['FR-03', 'An approved visitor receives a QR pass valid only on the approved date.', 'Must'],
+    ['FR-04', 'Scanning a pass at the gate shows valid, expired or cancelled.', 'Must'],
+    ['FR-05', 'Entry and exit times are recorded on scan.', 'Must'],
+    ['FR-06', 'Admin sees a live list of visitors on site.', 'Should'],
+    ['FR-07', 'Details of repeat visitors are filled in from past visits.', 'Could'],
+  ],
+  success: ['No paper register at the gate', 'Visitor details entered once', 'A live count of visitors on site at any time'],
+}
 
 // Capabilities, split the way a consulting team staffs them.
 export const capabilities = {

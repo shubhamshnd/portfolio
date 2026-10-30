@@ -8,7 +8,7 @@ const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variabl
 // One place for the public URL.
 const SITE = 'https://www.shubhamshnd.in'
 const description =
-  'Digital transformation and process automation: turning manual processes into working systems, from requirements and BRDs to ERP and SAP integration, automated reporting, dashboards and AI. Built and rolled out across seven JSW Infrastructure sites. Open to digital transformation and process automation consulting roles.'
+  'Digital transformation and process automation: turning manual processes into working systems, from requirements and BRDs to ERP and SAP integration, automated reporting, dashboards and AI. Built and rolled out across seven JSW Infrastructure sites. Open to Digital Transformation Consultant, Business Analyst and Solution Consultant roles.'
 
 export const metadata = {
   metadataBase: new URL(SITE),

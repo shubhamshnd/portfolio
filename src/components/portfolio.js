@@ -6,7 +6,7 @@ import Globe from '@/components/globe'
 import Beam from '@/components/beam'
 import Backdrop from '@/components/backdrop'
 import { track } from '@vercel/analytics'
-import { profile, journey, network, projects, method, leadership, capabilities, tech, cases, testimonials } from '@/data/site'
+import { profile, journey, network, projects, method, leadership, sample, capabilities, tech, cases, testimonials } from '@/data/site'
 
 const NAV = [
   { id: 'about', label: 'About' },
@@ -23,7 +23,7 @@ const hasArea = (p, area) => area === 'All' || p.areas?.includes(area)
 // Phones get 44px buttons; desktop keeps plain links in the left column.
 const HEADER_LINK = 'inline-flex min-h-11 items-center rounded-md border px-4 hover:border-accent lg:min-h-0 lg:border-0 lg:px-0'
 
-// External links; the résumé one is counted in Vercel Analytics.
+// External links, each counted in Vercel Analytics.
 function Links() {
   return profile.links.map((l) => (
     <li key={l.label}>
@@ -32,7 +32,7 @@ function Links() {
         target="_blank"
         rel="noreferrer"
         className={`${HEADER_LINK} border-line hover:text-accent`}
-        onClick={() => l.label === 'Résumé' && track('Résumé opened')}
+        onClick={() => track(`${l.label} opened`, { from: 'header' })}
       >
         {l.label} ↗
       </a>
@@ -263,7 +263,7 @@ function Work({ onOpen }) {
       </p>
       <ul className="mt-2 border-b border-line">
         {shown.map((p) => (
-          <li key={p.id} className="group relative border-t border-line py-4">
+          <li key={p.id} id={p.id} className="group relative scroll-mt-16 border-t border-line py-4">
             <div className="flex items-baseline justify-between gap-4">
               <h3 className="font-medium text-head">
                 {p.media.length ? (
@@ -451,7 +451,7 @@ const CASE_PARTS = [
 function CaseStudy({ c, open, onOpen }) {
   const p = projects.find((x) => x.id === c.project)
   return (
-    <details open={open} className="group rounded-lg border border-line bg-panel p-5 open:border-accent/50" onToggle={(e) => e.currentTarget.open && track('Case study opened', { case: c.project })}>
+    <details id={`case-${c.project}`} open={open} className="group scroll-mt-16 rounded-lg border border-line bg-panel p-5 open:border-accent/50" onToggle={(e) => e.currentTarget.open && track('Case study opened', { case: c.project })}>
       <summary className="cursor-pointer list-none">
         <p className="font-mono text-xs uppercase tracking-widest text-accent">{c.client}</p>
         <h3 className="mt-1 text-lg font-semibold text-head">
@@ -541,6 +541,67 @@ function Commits({ data }) {
   )
 }
 
+function Steps({ title, steps }) {
+  return (
+    <div>
+      <h4 className="font-mono text-xs uppercase tracking-widest text-head">{title}</h4>
+      <ol className="mt-3 space-y-3 border-l border-line pl-5 text-sm">
+        {steps.map(([who, what], i) => (
+          <li key={i}>
+            <span className="font-mono text-xs text-accent">{who}</span>
+            <p className="mt-0.5 leading-relaxed">{what}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+// A made-up requirements pack: as-is and to-be process, problems, requirements and success measures.
+function Sample() {
+  return (
+    <div id="sample-brd" className="mt-12 scroll-mt-16 rounded-lg border border-line bg-panel p-5">
+      <h3 className="text-lg font-semibold text-head">Sample requirements pack: {sample.title}</h3>
+      <p className="mt-2 max-w-prose text-sm leading-relaxed">{sample.note}</p>
+      <div className="mt-6 grid gap-8 sm:grid-cols-2">
+        <Steps title={`As is · ${sample.asIs.length} steps`} steps={sample.asIs} />
+        <Steps title={`To be · ${sample.toBe.length} steps`} steps={sample.toBe} />
+      </div>
+      <h4 className="mt-8 font-mono text-xs uppercase tracking-widest text-head">What breaks today</h4>
+      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm marker:text-accent">
+        {sample.pains.map((x) => (
+          <li key={x}>{x}</li>
+        ))}
+      </ul>
+      <h4 className="mt-8 font-mono text-xs uppercase tracking-widest text-head">Functional requirements</h4>
+      <table className="mt-3 w-full text-left text-sm">
+        <thead className="font-mono text-xs uppercase tracking-widest text-ink">
+          <tr>
+            <th className="py-2 pr-3 font-normal">ID</th>
+            <th className="py-2 pr-3 font-normal">Requirement</th>
+            <th className="py-2 font-normal">Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sample.requirements.map(([id, text, pri]) => (
+            <tr key={id} className="border-t border-line align-top">
+              <td className="whitespace-nowrap py-2 pr-3 font-mono text-xs text-accent">{id}</td>
+              <td className="py-2 pr-3 leading-relaxed">{text}</td>
+              <td className="py-2 font-mono text-xs text-head">{pri}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <h4 className="mt-8 font-mono text-xs uppercase tracking-widest text-head">How we'll know it worked</h4>
+      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm marker:text-accent">
+        {sample.success.map((x) => (
+          <li key={x}>{x}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 function CopyEmail() {
   const [done, setDone] = useState(false)
   const copy = () =>
@@ -564,14 +625,20 @@ export default function Portfolio({ commits }) {
   const [nav, setNav] = useState('about')
   const [open, setOpen] = useState(null)
 
-  // Whatever crosses the middle of the screen drives the globe and the nav.
+  // Whatever crosses the middle of the screen drives the globe and the nav. Each section is counted once
+  // per visit, to see how far people read.
   useEffect(() => {
+    const seen = new Set()
     const io = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (!e.isIntersecting) return
           setStop(e.target.dataset.stop)
           setNav(e.target.dataset.nav)
+          const section = e.target.closest('section')?.id || 'top'
+          if (seen.has(section)) return
+          seen.add(section)
+          track('Section reached', { section })
         }),
       { rootMargin: '-50% 0px -50% 0px' },
     )
@@ -580,6 +647,23 @@ export default function Portfolio({ commits }) {
   }, [desktop])
 
   const openProject = (p) => transition(() => setOpen(p))
+
+  // Share links: /#portbird scrolls to that project and opens its screens; /#case-portbird opens that case study.
+  useEffect(() => {
+    const go = () => {
+      const id = decodeURIComponent(location.hash.slice(1))
+      const el = id && document.getElementById(id)
+      if (!el) return
+      if (el.tagName === 'DETAILS') el.open = true
+      el.scrollIntoView({ block: 'start' })
+      track('Share link opened', { id })
+      const p = projects.find((x) => x.id === id)
+      if (p?.media.length) setOpen(p)
+    }
+    go()
+    addEventListener('hashchange', go)
+    return () => removeEventListener('hashchange', go)
+  }, [])
   const close = () => transition(() => setOpen(null))
 
   return (
@@ -616,7 +700,7 @@ export default function Portfolio({ commits }) {
 
         <ul className="mt-6 flex flex-wrap gap-2 font-mono text-sm lg:mt-4 lg:gap-x-6 lg:gap-y-2">
           <li>
-            <a href={`mailto:${profile.email}`} className={`${HEADER_LINK} border-accent text-accent hover:underline`}>
+            <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from: 'header' })} className={`${HEADER_LINK} border-accent text-accent hover:underline`}>
               Email
             </a>
           </li>
@@ -637,10 +721,10 @@ export default function Portfolio({ commits }) {
           className={`fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-line bg-bg/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 transition-transform duration-300 ${nav === 'top' || nav === 'contact' ? 'translate-y-full' : ''}`}
           inert={nav === 'top' || nav === 'contact' ? '' : undefined}
         >
-          <a href={`mailto:${profile.email}`} className="flex min-h-11 flex-1 items-center justify-center rounded-md bg-accent font-medium text-bg">
+          <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from: 'phone bar' })} className="flex min-h-11 flex-1 items-center justify-center rounded-md bg-accent font-medium text-bg">
             Email me
           </a>
-          <a href="/shubham_resume.pdf" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened')} className="flex min-h-11 flex-1 items-center justify-center rounded-md border border-line font-medium text-head">
+          <a href="/shubham_resume.pdf" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'phone bar' })} className="flex min-h-11 flex-1 items-center justify-center rounded-md border border-line font-medium text-head">
             Résumé ↗
           </a>
         </div>
@@ -731,6 +815,7 @@ export default function Portfolio({ commits }) {
               <li key={t}>{t}</li>
             ))}
           </ul>
+          <Sample />
         </section>
 
         <section id="skills" data-stop="network" data-nav="cases" className="mt-24 scroll-mt-16">
@@ -788,13 +873,13 @@ export default function Portfolio({ commits }) {
           <p className="max-w-prose text-2xl font-medium leading-snug text-head">Email is the quickest way to reach me. I reply within a day or two.</p>
           <p className="mt-3 max-w-prose">{profile.openTo}</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <a href={`mailto:${profile.email}`} className="inline-flex min-h-11 items-center rounded-md bg-accent px-5 font-medium text-bg hover:bg-accent/90">
+            <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md bg-accent px-5 font-medium text-bg hover:bg-accent/90">
               Email me
             </a>
-            <a href={profile.links[0].href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
+            <a href={profile.links[0].href} target="_blank" rel="noreferrer" onClick={() => track('LinkedIn opened', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
               LinkedIn ↗
             </a>
-            <a href="/shubham_resume.pdf" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened')} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
+            <a href="/shubham_resume.pdf" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
               Résumé ↗
             </a>
           </div>
