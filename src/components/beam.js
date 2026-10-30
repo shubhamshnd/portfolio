@@ -18,6 +18,8 @@ uniform float uDpr;
 uniform float uTime;
 uniform float uIntro; // 0 to 1 over the opening
 uniform float uFlare; // 1 right after the globe moves to a new stop, decays to 0
+uniform float uPour;  // 0 to 1: the falling sheets growing down from the globe
+uniform float uDrop;  // 0 to 1: once you scroll, the sheets come away from the globe and fall off
 uniform vec3 uGlobe;  // centre x, y and rim radius, css px
 uniform float uTop;   // where the beam comes out (under the nav)
 
@@ -87,6 +89,9 @@ void main() {
   float drop = q.y;
   float sheet = exp(-sq(side / (2.0 + 0.06 * max(drop, 0.0)))) * smoothstep(0.0, 40.0, drop) * exp(-drop / (0.8 * R));
   float rain = 0.45 + 0.9 * noise(vec2(side * 0.25, drop / 22.0 - t * 7.0));
+  // The sheet runs from its tail (falling away, with gravity) to its head (still pouring down).
+  float head = uPour * 1.6 * R, tail = uDrop * uDrop * 1.6 * R;
+  sheet *= smoothstep(head + 10.0, head - 40.0, drop) * smoothstep(tail - 10.0, tail + 40.0, drop) * (1.0 - smoothstep(0.85, 1.0, uDrop));
   col += mix(AMBER, EMBER, 0.5) * 1.3 * sheet * rain * pour * breathe;
 
   // Haze: slow smoke, lit amber near the beam and the rim, blue further out.
@@ -131,12 +136,23 @@ export default function Beam({ stop }) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
     gl.enableVertexAttribArray(0)
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
-    const u = Object.fromEntries(['uSize', 'uDpr', 'uTime', 'uIntro', 'uFlare', 'uGlobe', 'uTop'].map((n) => [n, gl.getUniformLocation(prog, n)]))
+    const u = Object.fromEntries(['uSize', 'uDpr', 'uTime', 'uIntro', 'uFlare', 'uPour', 'uDrop', 'uGlobe', 'uTop'].map((n) => [n, gl.getUniformLocation(prog, n)]))
 
     const t0 = performance.now()
     let raf
+    let last = t0
+    // Scrolling away from the top stops the pour: the sheets drop off. Back at the top they pour again.
+    let fall = 0
+    let grow = 1
     const frame = (now) => {
       raf = requestAnimationFrame(frame)
+      const dt = Math.min(now - last, 64)
+      last = now
+      if (scrollY > 40) fall = Math.min(1, fall + dt / 1100)
+      else {
+        if (fall > 0) [fall, grow] = [0, 0]
+        grow = Math.min(1, grow + dt / 900)
+      }
       // ponytail: measures every frame (a few rects); the header is sticky, so this is cheap and never stale.
       const g = document.querySelector('header canvas.lens')
       if (!g) return
@@ -157,6 +173,8 @@ export default function Beam({ stop }) {
       gl.uniform1f(u.uTime, (now - t0) / 1000)
       gl.uniform1f(u.uIntro, 1 - (1 - k) ** 2)
       gl.uniform1f(u.uFlare, Math.exp(-(now - flare.current) / 500))
+      gl.uniform1f(u.uPour, grow)
+      gl.uniform1f(u.uDrop, fall)
       gl.uniform3f(u.uGlobe, r.left - h.left + r.width / 2, r.top - h.top + r.height / 2, r.width * 0.425) // the .lens mask edge in globals.css
       gl.uniform1f(u.uTop, nav ? nav.getBoundingClientRect().bottom - h.top + 6 : 0)
       gl.drawArrays(gl.TRIANGLES, 0, 3)

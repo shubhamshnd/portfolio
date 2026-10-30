@@ -66,10 +66,25 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     const state = { step: -1, spin: true, alpha: still ? 1 : 0, boost: 0, shift: 0, intro: !still }
     let w = 0, dpr = 1, lo = null, hi = null
     let anim = null, raf = 0, last = 0, drawn = 0, dead = false
+    // Close-ups tilt into an isometric view: the chart turns and is foreshortened about the focus point,
+    // as an affine transform (isometric is a parallel projection, so no perspective needed). Labels are
+    // placed through it but drawn upright. tf is null at globe zoom.
+    let tf = null
+    // While tilted, `base` holds extra chart round the edges (pad, css px) so turning it leaves no gaps.
+    let pad = 0
+    const sizeBase = () => {
+      base.width = base.height = Math.round((w + 2 * pad) * dpr)
+      baseKey = ''
+    }
+    const tilt = ([x, y]) => {
+      if (!tf) return [x, y]
+      const dx = x - tf.fx, dy = y - tf.fy
+      return [tf.fx + dx * tf.c - dy * tf.s, tf.fy + (dx * tf.s + dy * tf.c) * tf.k]
+    }
 
     const drawBase = () => {
-      bctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      bctx.clearRect(0, 0, w, w)
+      bctx.setTransform(dpr, 0, 0, dpr, pad * dpr, pad * dpr)
+      bctx.clearRect(-pad, -pad, w + 2 * pad, w + 2 * pad)
       bctx.beginPath(); bpath(sphere); bctx.fillStyle = C.sea; bctx.fill()
       bctx.beginPath(); bpath(cam.z > 3 ? grid1 : grid10); bctx.strokeStyle = C.grid; bctx.lineWidth = 0.6; bctx.stroke()
       const shape = cam.z > 2.2 && hi ? hi : lo
@@ -88,12 +103,12 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       const from = ll(a), to = ll(b)
       const along = geoInterpolate(from, to)
       const centre = [cam.lon, cam.lat]
-      const [ax, ay] = raw(from), [bx, by] = raw(to)
+      const [ax, ay] = tilt(raw(from)), [bx, by] = tilt(raw(to))
       const rise = Math.min(Math.hypot(bx - ax, by - ay) * 0.35, w * 0.3)
       const pts = []
       for (let i = 0; i <= N; i++) {
         const s = i / N, p = along(s)
-        const [x, y] = raw(p)
+        const [x, y] = tilt(raw(p))
         pts.push([x, y - rise * Math.sin(Math.PI * s), geoDistance(p, centre) < Math.PI / 2])
       }
       return pts
@@ -130,12 +145,26 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       if (!w) return
       proj.translate([w / 2 - cam.shift * w, w / 2]).scale(w * 0.44 * cam.z).rotate([-cam.lon, -cam.lat])
       raw.translate(proj.translate()).scale(proj.scale()).rotate(proj.rotate())
+      // Tilt grows with zoom: none at globe level, full at a port (z 14).
+      const u = Math.min(Math.max((cam.z - 2.5) / 7.5, 0), 1)
+      const iso = u * u * (3 - 2 * u)
+      const want = iso > 0.001 ? Math.round(w * 0.6) : 0
+      if (want !== pad) { pad = want; sizeBase() }
       const key = [w, dpr, cam.lon, cam.lat, cam.z, cam.shift, lo ? 1 : 0, hi ? 1 : 0].join()
       if (key !== baseKey) { baseKey = key; drawBase() }
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.clearRect(0, 0, el.width, el.height)
       ctx.globalAlpha = state.alpha
-      ctx.drawImage(base, 0, 0)
+      if (pad) {
+        const a = -0.5 * iso // turn about 30°
+        tf = { fx: w / 2 - cam.shift * w, fy: w / 2, c: Math.cos(a), s: Math.sin(a), k: 1 - 0.45 * iso, iso }
+        const { fx, fy, c, s, k } = tf
+        ctx.setTransform(dpr * c, dpr * s * k, -dpr * s, dpr * c * k, dpr * (fx - fx * c + fy * s), dpr * (fy - k * (fx * s + fy * c)))
+        ctx.drawImage(base, -pad, -pad, w + 2 * pad, w + 2 * pad)
+      } else {
+        tf = null
+        ctx.drawImage(base, 0, 0)
+      }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
       // Route travelled so far, then spokes to the wider network, floating above the chart.
@@ -160,9 +189,17 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       const below = shift > 0 // phones: label under the dot so it stays in the visible half
       const mark = (loc, on, main, name) => {
         if (geoDistance(ll(loc), centre) > Math.PI / 2 - 0.02) return
-        const [x, y] = proj(ll(loc))
+        const [gx, gy] = tilt(proj(ll(loc)))
+        // In the tilted view a port is a pin: a ring on the ground, a stem, and the dot on top.
+        const pin = tf ? tf.iso * (main ? 22 : 12) : 0
+        const x = gx, y = gy - pin
+        const flat = tf ? tf.k : 1
+        if (pin) {
+          ctx.beginPath(); ctx.ellipse(gx, gy, main ? 6 : 3.5, (main ? 6 : 3.5) * flat, 0, 0, Math.PI * 2); ctx.strokeStyle = on ? 'rgba(255,176,32,0.7)' : C.dim; ctx.lineWidth = 1; ctx.stroke()
+          ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(x, y); ctx.strokeStyle = on ? 'rgba(255,196,90,0.8)' : C.dim; ctx.lineWidth = 1.2; ctx.stroke()
+        }
         ctx.beginPath(); ctx.arc(x, y, main ? 5 : 3, 0, Math.PI * 2); ctx.fillStyle = on ? C.amber : C.dim; ctx.fill()
-        if (main) { ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,176,32,0.6)'; ctx.lineWidth = 1; ctx.stroke() }
+        if (main) { ctx.beginPath(); ctx.ellipse(gx, gy, 12, 12 * flat, 0, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,176,32,0.6)'; ctx.lineWidth = 1; ctx.stroke() }
         if (!name) return
         const big = main ? 12 : 10
         ctx.font = `${main ? 500 : 400} ${big}px ${mono}`
@@ -244,9 +281,8 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     const resize = () => {
       w = el.clientWidth
       dpr = Math.min(devicePixelRatio, 2)
-      base.width = el.width = Math.round(w * dpr)
-      base.height = el.height = Math.round(w * dpr)
-      baseKey = ''
+      el.width = el.height = Math.round(w * dpr)
+      sizeBase()
       draw()
     }
     const ro = new ResizeObserver(resize)
