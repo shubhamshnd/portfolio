@@ -1,4 +1,11 @@
 <!doctype html>
+<!--
+  Source of the résumé. After editing, print both outputs (Git Bash, from the repo root):
+    chrome="/c/Program Files/Google/Chrome/Application/chrome.exe"
+    "$chrome" --headless=new --no-pdf-header-footer --print-to-pdf=public/shubham_resume.pdf "file://$PWD/resume/resume.html"
+    "$chrome" --headless=new --hide-scrollbars --window-size=794,1123 --force-device-scale-factor=2 --screenshot=public/shubham_resume.png "file://$PWD/resume/resume.html"
+  The PDF must stay one page; the PNG is what /resume shows.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -27,6 +34,8 @@
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
   .k { font-weight: 600; }
   .muted { color: #46545f; }
+  /* On screen (the PNG for /resume) the page margins come from padding instead of @page. */
+  @media screen { body { width: 210mm; padding: 9mm 12mm; background: #fff; } }
 </style>
 </head>
 <body>

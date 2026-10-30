@@ -1,5 +1,8 @@
 // Everything on the page comes from this file. Edit text here, not in components.
 
+// One place for the public URL.
+export const SITE = 'https://www.shubhamshnd.in'
+
 export const profile = {
   name: 'Shubham Shinde',
   title: 'Digital Transformation · Process Automation',
@@ -29,7 +32,7 @@ export const profile = {
   links: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/shubham-shnd/' },
     { label: 'GitHub', href: 'https://github.com/shubhamshnd' },
-    { label: 'Résumé', href: '/shubham_resume.pdf' },
+    { label: 'Résumé', href: '/resume' },
   ],
 }
 

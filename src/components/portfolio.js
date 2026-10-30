@@ -724,7 +724,7 @@ export default function Portfolio({ commits }) {
           <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from: 'phone bar' })} className="flex min-h-11 flex-1 items-center justify-center rounded-md bg-accent font-medium text-bg">
             Email me
           </a>
-          <a href="/shubham_resume.pdf" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'phone bar' })} className="flex min-h-11 flex-1 items-center justify-center rounded-md border border-line font-medium text-head">
+          <a href="/resume" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'phone bar' })} className="flex min-h-11 flex-1 items-center justify-center rounded-md border border-line font-medium text-head">
             Résumé ↗
           </a>
         </div>
@@ -879,7 +879,7 @@ export default function Portfolio({ commits }) {
             <a href={profile.links[0].href} target="_blank" rel="noreferrer" onClick={() => track('LinkedIn opened', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
               LinkedIn ↗
             </a>
-            <a href="/shubham_resume.pdf" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
+            <a href="/resume" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
               Résumé ↗
             </a>
           </div>

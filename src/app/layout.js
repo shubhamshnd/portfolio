@@ -1,12 +1,11 @@
 import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
+import { SITE } from '@/data/site'
 import './globals.css'
 
 const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-sans' })
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' })
 
-// One place for the public URL.
-const SITE = 'https://www.shubhamshnd.in'
 const description =
   'Digital transformation and process automation: turning manual processes into working systems, from requirements and BRDs to ERP and SAP integration, automated reporting, dashboards and AI. Built and rolled out across seven JSW Infrastructure sites. Open to Digital Transformation Consultant, Business Analyst and Solution Consultant roles.'
 
