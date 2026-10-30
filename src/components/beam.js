@@ -183,11 +183,10 @@ export default function Beam({ stop }) {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  // Off while the Work gallery stands in for the globe.
   return (
     <canvas
       ref={canvas}
-      className={`pointer-events-none fixed inset-0 z-[1] h-full w-full transition-opacity duration-700 ${stop === 'work' ? 'opacity-0' : ''}`}
+      className="pointer-events-none fixed inset-0 z-[1] h-full w-full"
       aria-hidden="true"
     />
   )

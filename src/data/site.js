@@ -43,7 +43,7 @@ export const journey = [
     location: [18.7, 73.03],
     when: 'Aug 2023',
     role: 'Graduate Engineer Trainee, then Assistant Manager, Digitalisation',
-    facts: ['5 berths', '34 MTPA', 'River port on the Amba, 16 km inland'],
+    facts: ['5 berths', '34 million tonnes a year', 'River port on the Amba, 16 km inland'],
     text: 'Where I started. I learned how a bulk cargo port actually runs, then started writing software for the problems I saw on the ground.',
   },
   {
@@ -63,7 +63,7 @@ export const journey = [
     location: [17.3, 73.22],
     when: '',
     role: '',
-    facts: ['7 berths', '55 MTPA', 'Deep-water, all-weather'],
+    facts: ['7 berths', '55 million tonnes a year', 'Deep-water, all-weather'],
     text: '',
   },
   {
@@ -73,7 +73,7 @@ export const journey = [
     location: [15.41, 73.8],
     when: '',
     role: '',
-    facts: ['2 berths', '8.5 MTPA'],
+    facts: ['2 berths', '8.5 million tonnes a year'],
     text: '',
   },
   {
@@ -83,7 +83,7 @@ export const journey = [
     location: [12.93, 74.81],
     when: '',
     role: '',
-    facts: ['315 m berth', '14 m draft', '6.73 MTPA'],
+    facts: ['315 m berth', '14 m draft', '6.73 million tonnes a year'],
     text: '',
   },
 ]
@@ -103,7 +103,7 @@ export const network = [
 // stats: short proof lines shown in accent. portStats / portMedia: per-port overrides shown when opened from that port.
 // media: files in /public/projects/<id>/ — images (.png/.jpg/.webp) or videos (.mp4/.webm).
 // e.g. media: ['/projects/weighbridge/1.png', '/projects/weighbridge/demo.mp4']
-// Projects with no media stay on the route but are left out of the Work grid.
+// Projects with no media are still listed, just without a "View screens" link.
 export const projects = [
   {
     id: 'portbird',
@@ -474,15 +474,15 @@ export const testimonials = [
     note: 'Senior colleague, Jul 2025',
   },
   {
-    quote: 'His contributions in digitalization, smart port technologies, and business applications are truly commendable. A self reliant developer and tester, Shubham consistently delivers quality digital solutions.',
-    name: 'Arabinda Moharana',
-    title: 'IT Infrastructure Head · Ports, Logistics, Oil & Gas',
-    note: 'Same team, Jul 2025',
-  },
-  {
     quote: 'Good IT resource and takes initiative to business requirements.',
     name: 'Karun Kant Dave',
     title: 'Group CEO · Infrastructure, Mining & Ports',
     note: 'Senior colleague, Oct 2026',
+  },
+  {
+    quote: 'His contributions in digitalization, smart port technologies, and business applications are truly commendable. A self reliant developer and tester, Shubham consistently delivers quality digital solutions.',
+    name: 'Arabinda Moharana',
+    title: 'IT Infrastructure Head · Ports, Logistics, Oil & Gas',
+    note: 'Same team, Jul 2025',
   },
 ]
