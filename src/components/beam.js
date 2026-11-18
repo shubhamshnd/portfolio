@@ -159,7 +159,8 @@ export default function Beam({ stop }) {
       const h = el.getBoundingClientRect()
       const r = g.getBoundingClientRect()
       const nav = document.querySelector('header nav')
-      const dpr = Math.min(devicePixelRatio, 1.5)
+      // A soft glow: 1x is enough, and a full-screen shader at Retina density is heavy for Safari.
+      const dpr = Math.min(devicePixelRatio, 1)
       const w = Math.round(h.width * dpr)
       const ht = Math.round(h.height * dpr)
       if (el.width !== w || el.height !== ht) {
@@ -175,7 +176,7 @@ export default function Beam({ stop }) {
       gl.uniform1f(u.uFlare, Math.exp(-(now - flare.current) / 500))
       gl.uniform1f(u.uPour, grow)
       gl.uniform1f(u.uDrop, fall)
-      gl.uniform3f(u.uGlobe, r.left - h.left + r.width / 2, r.top - h.top + r.height / 2, r.width * 0.425) // the .lens mask edge in globals.css
+      gl.uniform3f(u.uGlobe, r.left - h.left + r.width / 2, r.top - h.top + r.height / 2, r.width * 0.425) // the lens clip edge in globe.js
       gl.uniform1f(u.uTop, nav ? nav.getBoundingClientRect().bottom - h.top + 6 : 0)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }

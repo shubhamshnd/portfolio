@@ -11,13 +11,13 @@ export const profile = {
   openTo: 'Open to Digital Transformation Consultant, Business Analyst and Solution Consultant roles in process automation. Mumbai, Pune or remote.',
   lead: 'I take manual work, work out what the business needs, and automate it.',
   // Shown as a facts row at the top of About.
-  role: 'Assistant Manager, Digital Solutions Engineer',
+  role: 'Deputy Manager, Digital Solutions Engineer',
   company: 'JSW Infrastructure',
   experience: '3+ years',
   location: 'Navi Mumbai, India',
   education: 'PGPM (MBA), IIM Mumbai, weekend programme · Jul 2026 – Jul 2028',
   intro: [
-    "I'm an Assistant Manager and Digital Solutions Engineer at JSW Infrastructure. For three years I've been taking work that ran on paper, Excel and phone calls and turning it into software. So far that has been at ports, but the problems are the same in a plant, a warehouse or a back office.",
+    "I'm a Deputy Manager and Digital Solutions Engineer at JSW Infrastructure. For three years I've been taking work that ran on paper, Excel and phone calls and turning it into software. So far that has been at ports, but the problems are the same in a plant, a warehouse or a back office.",
     "I like to start on the ground. I sit with the people doing the work, see where their time goes, and write down what the business actually needs before anyone talks about software. That usually becomes a BRD that operations, finance and IT all agree on. Then I design the solution and build it myself.",
     "Most of what I make is workflow apps, ERP and SAP integrations, automated reports and dashboards and, more and more, AI tools that answer questions from business data. I'm now doing a weekend PGPM at IIM Mumbai alongside my job, so I can make the business case for a system as well as build it.",
   ],

@@ -71,9 +71,11 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     // placed through it but drawn upright. tf is null at globe zoom.
     let tf = null
     // While tilted, `base` holds extra chart round the edges (pad, css px) so turning it leaves no gaps.
-    let pad = 0
+    // bdpr: base resolution. Panning between close-ups redraws the big padded chart every frame, which
+    // Safari's canvas is slow at, so it draws at 1x while moving and sharpens once the camera stops.
+    let pad = 0, bdpr = 1
     const sizeBase = () => {
-      base.width = base.height = Math.round((w + 2 * pad) * dpr)
+      base.width = base.height = Math.round((w + 2 * pad) * bdpr)
       baseKey = ''
     }
     const tilt = ([x, y]) => {
@@ -83,7 +85,7 @@ export default function Globe({ stop, shift = 0, className = '' }) {
     }
 
     const drawBase = () => {
-      bctx.setTransform(dpr, 0, 0, dpr, pad * dpr, pad * dpr)
+      bctx.setTransform(bdpr, 0, 0, bdpr, pad * bdpr, pad * bdpr)
       bctx.clearRect(-pad, -pad, w + 2 * pad, w + 2 * pad)
       bctx.beginPath(); bpath(sphere); bctx.fillStyle = C.sea; bctx.fill()
       bctx.beginPath(); bpath(cam.z > 3 ? grid1 : grid10); bctx.strokeStyle = C.grid; bctx.lineWidth = 0.6; bctx.stroke()
@@ -148,12 +150,20 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       // Tilt grows with zoom: none at globe level, full at a port (z 14).
       const u = Math.min(Math.max((cam.z - 2.5) / 7.5, 0), 1)
       const iso = u * u * (3 - 2 * u)
-      const want = iso > 0.001 ? Math.round(w * 0.6) : 0
-      if (want !== pad) { pad = want; sizeBase() }
-      const key = [w, dpr, cam.lon, cam.lat, cam.z, cam.shift, lo ? 1 : 0, hi ? 1 : 0].join()
+      // The lens circle (radius 0.425w), squashed by the tilt (k down to 0.55), needs 0.27w past each edge;
+      // phones move the focus off centre by `shift`, which adds up to twice that on one side.
+      const want = iso > 0.001 ? Math.round(w * (0.3 + 2 * Math.max(cam.shift, state.shift))) : 0
+      const wantDpr = want && anim ? 1 : dpr
+      if (want !== pad || wantDpr !== bdpr) { pad = want; bdpr = wantDpr; sizeBase() }
+      const key = [w, bdpr, cam.lon, cam.lat, cam.z, cam.shift, lo ? 1 : 0, hi ? 1 : 0].join()
       if (key !== baseKey) { baseKey = key; drawBase() }
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.clearRect(0, 0, el.width, el.height)
+      // Round edge of the lens, clipped here rather than with a CSS mask: Safari re-composites a masked
+      // canvas on every frame. Radius 0.425w is the edge the beam's rim light follows (beam.js).
+      ctx.save()
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.beginPath(); ctx.arc(w / 2, w / 2, w * 0.425, 0, Math.PI * 2); ctx.clip()
       ctx.globalAlpha = state.alpha
       if (pad) {
         const a = -0.5 * iso // turn about 30°
@@ -163,7 +173,8 @@ export default function Globe({ stop, shift = 0, className = '' }) {
         ctx.drawImage(base, -pad, -pad, w + 2 * pad, w + 2 * pad)
       } else {
         tf = null
-        ctx.drawImage(base, 0, 0)
+        ctx.setTransform(1, 0, 0, 1, 0, 0)
+        ctx.drawImage(base, 0, 0, el.width, el.height)
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
@@ -226,6 +237,7 @@ export default function Globe({ stop, shift = 0, className = '' }) {
       journey.forEach((p, k) => k !== step && mark(p.location, k <= step, false, (cam.z > 3 && k < step) || all ? p.port : null))
       network.forEach((p) => mark(p.location, all, false, all ? p.name : null))
       ctx.globalAlpha = 1
+      ctx.restore()
     }
 
     const tick = (t) => {
