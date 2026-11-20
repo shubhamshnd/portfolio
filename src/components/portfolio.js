@@ -274,7 +274,7 @@ function TerminalSection({ onOpen }) {
           <span className="max-sm:hidden"> Drag to look around.</span>
         </p>
       </div>
-      <div className="relative mt-6 h-[62vh] min-h-[380px] w-full border-y border-line bg-[radial-gradient(ellipse_at_center,rgb(var(--panel))_0%,rgb(var(--bg))_70%)] sm:h-[72vh]">
+      <div className="relative mt-6 h-[54vh] min-h-[360px] w-full border-y border-line bg-[radial-gradient(ellipse_at_center,rgb(var(--panel))_0%,rgb(var(--bg))_70%)] sm:h-[72vh]">
         <Terminal active={zone} onSelect={pick} />
         {z && (
           <div className="fade absolute bottom-3 right-3 top-3 z-10 hidden w-[380px] overflow-y-auto rounded-lg border border-line bg-bg/92 p-5 backdrop-blur md:block">
@@ -467,10 +467,13 @@ export default function Portfolio() {
 
       <main id="top">
         <section id="about" data-nav="about" className={`${wrap} pb-14 pt-14 sm:pt-20`}>
-          <p className="font-mono text-xs uppercase tracking-widest text-accent">{profile.title}</p>
-          <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-head sm:text-6xl">{profile.lead}</h1>
+          {/* The name is the h1 so search engines read this page as Shubham Shinde's. */}
+          <h1 className="font-mono text-xs uppercase tracking-widest text-accent">
+            {profile.name} <span className="text-ink">·</span> {profile.title}
+          </h1>
+          <p className="mt-4 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-head sm:text-6xl">{profile.lead}</p>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed">
-            {profile.name}, {profile.role} at {profile.company}. {profile.domains}.
+            {profile.role} at {profile.company}. {profile.domains}.
           </p>
           <p className="mt-5 max-w-2xl border-l-2 border-accent pl-4 text-head">{profile.openTo}</p>
           <div className="mt-8">

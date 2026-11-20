@@ -29,6 +29,8 @@ export const profile = {
     { value: '7,500 h', label: 'manual work removed a year' },
   ],
   email: 'shubhamshindesunil.work@gmail.com',
+  // From Google Search Console > Add property > HTML tag: the content="..." value only.
+  googleVerification: '',
   links: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/shubham-shnd/' },
     { label: 'GitHub', href: 'https://github.com/shubhamshnd' },
