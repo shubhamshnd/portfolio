@@ -13,6 +13,7 @@ import { zones } from '@/data/site'
 const SPOTS = {
   anchorage: { at: [-6, 3, -46], cam: [-40, 26, -10], look: [-6, 0, -46] },
   quay: { at: [2, 15, -3], cam: [34, 22, 26], look: [0, 6, -4] },
+  liquid: { at: [30, 9, 12], cam: [62, 26, 34], look: [28, 2, 4] },
   yard: { at: [-14, 8, 20], cam: [18, 26, 48], look: [-12, 2, 20] },
   gate: { at: [24, 6, 41], cam: [52, 20, 62], look: [22, 1, 40] },
   control: { at: [-36, 15, 38], cam: [-6, 22, 70], look: [-34, 6, 38] },
@@ -64,6 +65,16 @@ function bulkCarrier(length = 34) {
   ship.add(at(box(4.5, 5, 7, C.steel), length * 0.42, 5.5, 0))
   ship.add(at(box(1, 2.5, 1, C.accent, false), length * 0.44, 9.2, 0))
   return ship
+}
+
+// Product tanker: hull, deck manifold and a superstructure aft.
+function tanker(length = 18) {
+  const t = new THREE.Group()
+  t.add(at(box(length, 3, 5, C.hull), 0, 0.9, 0))
+  t.add(at(box(length * 0.7, 0.4, 0.6, C.accent, false), -1, 2.6, 0))
+  t.add(at(box(0.5, 1.4, 4, C.steel, false), -1, 3, 0))
+  t.add(at(box(3, 4, 4.6, C.steel), length * 0.38, 4.4, 0))
+  return t
 }
 
 function barge(color = C.dark) {
@@ -156,6 +167,11 @@ function build(scene) {
     [-30, 25, 5, 5, C.ore],
     [-18, 25, 5.5, 6, C.coal],
   ].forEach(([x, z, r, h, c]) => scene.add(at(stockpile(r, h, c), x, 1.4 + h / 2, z)))
+
+  // Liquid jetty: a tanker alongside the east end, a loading arm and the pipeline to the tank farm.
+  scene.add(at(tanker(), 30, 0, -5))
+  scene.add(at(box(0.6, 6, 0.6, C.steel), 28, 4.4, 1.5), at(box(0.4, 0.4, 5, C.accent, false), 28, 7.2, -0.5))
+  scene.add(at(box(0.5, 0.5, 13, C.accent, false), 26, 2.1, 7))
 
   // Liquid terminal tanks.
   for (const [x, z] of [[18, 14], [26, 14], [34, 14], [22, 22], [30, 22]]) {

@@ -48,8 +48,14 @@ export const zones = [
   {
     id: 'quay',
     name: 'Quay and vessel operations',
-    text: 'Vessel calls, barge and MBC operations, berth allocation and services run in PortBird, the port ERP I built to replace a licensed system. Crane-side energy is read straight off PLCs and Moxa gateways.',
+    text: 'Dry bulk vessel calls, barge and MBC operations, berth allocation and services run in PortBird, the port ERP I built to replace a licensed system. Crane-side energy is read straight off PLCs and Moxa gateways.',
     projects: ['portbird', 'jaigarh-ems', 'mangalore-ems'],
+  },
+  {
+    id: 'liquid',
+    name: 'Liquid jetty and tank farm',
+    text: 'At the JNPA liquid terminal, every tanker parcel is tied to a pipeline and a tank-farm terminal, pumping is logged hour by hour, and NOR and pilot times feed laytime and delay records.',
+    projects: ['portbird-liquid'],
   },
   {
     id: 'yard',
@@ -105,8 +111,8 @@ export const journey = [
     location: [18.95, 72.95],
     when: '',
     role: '',
-    facts: ['Liquid cargo terminal'],
-    text: 'I rolled PortBird out here with the same features as Dharamtar.',
+    facts: ['Liquid bulk terminal', 'Chemicals, petroleum products, edible oils'],
+    text: 'I took PortBird from dry bulk to liquid: tanker parcels, pipelines, tank farms and hourly pumping logs.',
   },
   {
     id: 'jaigarh',
@@ -161,11 +167,11 @@ export const projects = [
     id: 'portbird',
     areas: ['ERP', 'Data'],
     name: 'PortBird',
-    ports: ['dharamtar', 'jnpa'],
-    summary: 'A full port management system (port ERP) with SAP and GST integration. Built in-house instead of buying a licence.',
+    ports: ['dharamtar'],
+    summary: 'A full port management system (port ERP) for dry bulk: vessel calls, barge and MBC operations, berth planning, services and invoicing, with SAP and GST integration. Built in-house instead of buying a licence.',
     stats: [],
     stack: ['Python', 'PostgreSQL', 'SAP API', 'GST API', 'Azure Data Lake', 'Entra ID'],
-    // First item plays in the viewer; JNPA uses its own screens below.
+    // First item plays in the viewer.
     media: [
       'https://youtu.be/BC4qWmioQ4s',
       '/projects/portbird/02-home.webp',
@@ -173,16 +179,23 @@ export const projects = [
       '/projects/portbird/04-mbc01.webp',
       '/projects/portbird/01-login.webp',
     ],
-    portMedia: {
-      jnpa: [
-        '/projects/portbird-jnpa/app1.webp',
-        '/projects/portbird-jnpa/app2.webp',
-        '/projects/portbird-jnpa/app3.webp',
-        '/projects/portbird-jnpa/app4.webp',
-        '/projects/portbird-jnpa/app5.webp',
-        '/projects/portbird-jnpa/app6.webp',
-      ],
-    },
+  },
+  {
+    id: 'portbird-liquid',
+    areas: ['ERP', 'Data'],
+    name: 'PortBird for Liquid Cargo',
+    ports: ['jnpa'],
+    summary: 'PortBird rebuilt for the JNPA liquid terminal. One tanker call carries many parcels of chemicals, petroleum products or edible oil, each tied to a pipeline and a tank-farm terminal. Berths are planned by dragging vessels onto them, pumping is logged hour by hour with rate, pressure, shift and equipment, and NOR, anchorage and pilot times feed laytime. Delays are checked against the anchorage-to-pilot and alongside-to-cast-off windows.',
+    stats: [],
+    stack: ['Python', 'PostgreSQL', 'SAP API', 'GST API'],
+    media: [
+      '/projects/portbird-jnpa/app3.webp',
+      '/projects/portbird-jnpa/app2.webp',
+      '/projects/portbird-jnpa/app6.webp',
+      '/projects/portbird-jnpa/app4.webp',
+      '/projects/portbird-jnpa/app5.webp',
+      '/projects/portbird-jnpa/app1.webp',
+    ],
   },
   {
     id: 'sap-gst',
@@ -440,7 +453,7 @@ export const cases = [
     diagnosis: 'Most of the effort went into moving the same data between systems. The licensed product did not follow how this port runs its barges and MBCs, and the port did not own its data.',
     options: 'Renew or buy a commercial port system, extend the existing one, or build in-house on the company stack.',
     recommendation: 'Build in-house: a port ERP shaped around our own vessel, barge and berth processes, with SAP and GST integrated so an invoice is entered once, and no licence or annual maintenance fee.',
-    rollout: 'Went live at Dharamtar first, then replicated to the JNPA liquid terminal with the same core, adapted for parcels, pipelines and tankers.',
+    rollout: 'Went live at Dharamtar first, then rebuilt for the JNPA liquid terminal on the same core: multi-parcel tanker calls, pipeline and tank-farm allocation, hourly pumping logs, and NOR and laytime events.',
     impact: ['No licence or annual maintenance fees at either site', '50+ reports automated at Dharamtar, 40+ at JNPA', 'About 7,500 hours of manual reporting removed a year', 'Invoices e-invoiced and posted to SAP without re-entry'],
   },
   {
