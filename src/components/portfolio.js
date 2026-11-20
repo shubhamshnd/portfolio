@@ -1,18 +1,19 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import Globe from '@/components/globe'
-import Beam from '@/components/beam'
-import Backdrop from '@/components/backdrop'
+import dynamic from 'next/dynamic'
 import { track } from '@vercel/analytics'
-import { profile, journey, network, projects, method, leadership, sample, capabilities, tech, cases, testimonials } from '@/data/site'
+import { profile, zones, abroad, journey, network, projects, capabilities, tech, cases, testimonials } from '@/data/site'
+
+// three.js only loads in the browser, after the first paint.
+const Terminal = dynamic(() => import('@/components/terminal'), { ssr: false })
 
 const NAV = [
-  { id: 'about', label: 'About' },
-  { id: 'journey', label: 'Journey' },
-  { id: 'work', label: 'Work' },
+  { id: 'terminal', label: 'Terminal' },
   { id: 'cases', label: 'Cases' },
+  { id: 'work', label: 'Work' },
+  { id: 'words', label: 'References' },
   { id: 'contact', label: 'Contact' },
 ]
 
@@ -20,62 +21,10 @@ const isVideo = (src) => /\.(mp4|webm)$/i.test(src)
 const AREAS = ['All', 'AI', 'Data', 'IoT/OT', 'ERP', 'Apps']
 const hasArea = (p, area) => area === 'All' || p.areas?.includes(area)
 
-// Phones get 44px buttons; desktop keeps plain links in the left column.
-const HEADER_LINK = 'inline-flex min-h-11 items-center rounded-md border px-4 hover:border-accent lg:min-h-0 lg:border-0 lg:px-0'
-
-// External links, each counted in Vercel Analytics.
-function Links() {
-  return profile.links.map((l) => (
-    <li key={l.label}>
-      <a
-        href={l.href}
-        target="_blank"
-        rel="noreferrer"
-        className={`${HEADER_LINK} border-line hover:text-accent`}
-        onClick={() => track(`${l.label} opened`, { from: 'header' })}
-      >
-        {l.label} ↗
-      </a>
-    </li>
-  ))
-}
-
 // Runs a DOM update inside a View Transition when the browser has it.
 function transition(update) {
   if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return update()
   document.startViewTransition(() => flushSync(update))
-}
-
-function useDesktop() {
-  const [desktop, setDesktop] = useState(null)
-  useEffect(() => {
-    const mq = matchMedia('(min-width: 1024px)')
-    const on = () => setDesktop(mq.matches)
-    on()
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [])
-  return desktop
-}
-
-function caption(stop) {
-  const p = journey.find((j) => j.id === stop)
-  if (p) return [p.port, p.place]
-  if (stop === 'network') return ['JSW Infrastructure', 'Ports and terminals in India and the UAE']
-  return ['Scroll down ↓']
-}
-
-function GlobePanel({ stop, size = 'min(560px, calc(100vh - 400px), 100%)' }) {
-  const [title, sub] = caption(stop)
-  return (
-    <figure className="mx-auto w-full" style={{ maxWidth: size }}>
-      <Globe stop={stop} />
-      <figcaption className="mt-2 text-center font-mono text-xs" aria-live="polite">
-        <span className="text-accent">{title}</span>
-        {sub && <span className="text-ink"> · {sub}</span>}
-      </figcaption>
-    </figure>
-  )
 }
 
 const youtubeId = (src) => src.match(/(?:youtu\.be\/|[?&]v=|embed\/)([\w-]{11})/)?.[1]
@@ -119,174 +68,6 @@ function Thumb({ project, controls, ...rest }) {
         </span>
       )}
     </div>
-  )
-}
-
-// A ring of one screen per project, in CSS 3D, above the Work list. It is decoration: the list is the way in,
-// so the ring is hidden from screen readers and the keyboard. It turns slowly, stops while the pointer is on it,
-// and a filter holds it still with the matching projects turned to the front. Drag to spin; click to open.
-const R = 40 // ring radius, in % of the container width (cqw)
-
-function Ring({ items, area, onOpen }) {
-  const n = items.length
-  const w = 2 * R * Math.tan(Math.PI / n) - 0.8 // cards just touch round the ring, with a small gap
-  const h = (w * 9) / 16
-  const [assign, setAssign] = useState(() => items.map((_, i) => i)) // assign[i]: the slot of project i
-  const ring = useRef(null)
-  const els = useRef([])
-  const s = useRef({ yaw: 0, vy: 0, drag: null, moved: 0, aim: null, hover: false }).current
-  const latest = useRef({})
-  latest.current = { area, assign }
-  const facing = (slot) => Math.cos((((slot * 360) / n + s.yaw) * Math.PI) / 180)
-
-  // A filter gives its projects the slots nearest the viewer.
-  useEffect(() => {
-    s.vy = 0
-    if (area === 'All') {
-      s.aim = null
-      return setAssign(items.map((_, i) => i))
-    }
-    s.aim = s.yaw
-    const order = items.map((_, j) => j).sort((a, b) => facing(b) - facing(a))
-    const ids = items.map((_, i) => i)
-    const next = []
-    ;[...ids.filter((i) => hasArea(items[i], area)), ...ids.filter((i) => !hasArea(items[i], area))].forEach((i, k) => (next[i] = order[k]))
-    setAssign(next)
-  }, [area]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
-    let raf
-    let last = performance.now()
-    const frame = (now) => {
-      raf = requestAnimationFrame(frame)
-      const dt = Math.min((now - last) / 1000, 0.05)
-      last = now
-      if (!s.drag) {
-        if (s.aim != null) s.yaw += (s.aim - s.yaw) * (still ? 1 : 1 - Math.exp(-4 * dt))
-        else s.yaw += (s.vy - (still || s.hover ? 0 : 6)) * dt
-        s.vy *= Math.exp(-3 * dt)
-      }
-      ring.current.style.transform = `rotateX(-8deg) rotateY(${s.yaw}deg)`
-      items.forEach((p, i) => {
-        const el = els.current[i]
-        if (!el) return
-        const z = Math.max(facing(latest.current.assign[i]), 0)
-        const on = hasArea(p, latest.current.area)
-        el.style.opacity = on ? 0.3 + 0.7 * z : 0.05 + 0.1 * z
-        el.style.pointerEvents = on && z > 0.6 ? 'auto' : 'none'
-      })
-    }
-    const move = (e) => {
-      if (!s.drag) return
-      const now = performance.now()
-      const dx = e.clientX - s.drag.x
-      s.moved += Math.abs(dx) + Math.abs(e.clientY - s.drag.y)
-      s.yaw += dx * 0.2
-      s.vy = (dx * 0.2) / Math.max((now - s.drag.t) / 1000, 0.008)
-      s.drag = { x: e.clientX, y: e.clientY, t: now }
-    }
-    const up = () => (s.drag = null)
-    addEventListener('pointermove', move)
-    addEventListener('pointerup', up)
-    addEventListener('pointercancel', up)
-    raf = requestAnimationFrame(frame)
-    return () => {
-      cancelAnimationFrame(raf)
-      removeEventListener('pointermove', move)
-      removeEventListener('pointerup', up)
-      removeEventListener('pointercancel', up)
-    }
-  }, [items, s]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  return (
-    <div
-      aria-hidden="true"
-      className="relative w-full cursor-grab select-none active:cursor-grabbing [container-type:inline-size] [&_img]:pointer-events-none"
-      // cqw doesn't resolve on the container itself, so its height comes from an aspect ratio. The tilted
-      // ring reaches further below its centre than above, hence the centre at 45%.
-      style={{ aspectRatio: `100 / ${h * 2.6}`, perspective: '1200px', touchAction: 'pan-y' }}
-      onPointerEnter={() => (s.hover = true)}
-      onPointerLeave={() => (s.hover = false)}
-      onPointerDown={(e) => {
-        s.drag = { x: e.clientX, y: e.clientY, t: performance.now() }
-        s.moved = 0
-        s.aim = null
-      }}
-    >
-      <div ref={ring} className="absolute left-1/2 top-[45%]" style={{ transformStyle: 'preserve-3d' }}>
-        {items.map((p, i) => (
-          <button
-            key={p.id}
-            ref={(el) => (els.current[i] = el)}
-            tabIndex={-1}
-            onClick={() => s.moved < 6 && onOpen(p)}
-            className={`absolute block aspect-video overflow-hidden rounded-sm border bg-panel ${area !== 'All' && hasArea(p, area) ? 'border-accent' : 'border-line'}`}
-            style={{
-              width: `${w}cqw`,
-              left: `${-w / 2}cqw`,
-              top: `${-h / 2}cqw`,
-              transform: `rotateY(${(assign[i] * 360) / n}deg) translateZ(${R}cqw)`,
-              transition: 'transform 1s cubic-bezier(.2,.8,.2,1)',
-            }}
-          >
-            <Media src={p.media[0]} alt="" />
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// Work: every project as a plain list, filtered by area. A row with screens opens them.
-function Work({ onOpen }) {
-  const [area, setArea] = useState('All')
-  const withScreens = useMemo(() => projects.filter((p) => p.media.length), [])
-  const shown = projects.filter((p) => hasArea(p, area))
-  return (
-    <>
-      <Ring items={withScreens} area={area} onOpen={onOpen} />
-      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter work">
-        {AREAS.map((a) => (
-          <button
-            key={a}
-            onClick={() => setArea(a)}
-            aria-pressed={area === a}
-            className={`min-h-11 rounded-full border px-4 font-mono text-xs ${area === a ? 'border-accent bg-accent text-bg' : 'border-line text-ink hover:text-head'}`}
-          >
-            {a}
-          </button>
-        ))}
-      </div>
-      <p className="mt-4 font-mono text-xs text-ink" aria-live="polite">
-        {area === 'All' ? `${projects.length} projects` : `${shown.length} of ${projects.length} projects in ${area}`}
-      </p>
-      <ul className="mt-2 border-b border-line">
-        {shown.map((p) => (
-          <li key={p.id} id={p.id} className="group relative scroll-mt-16 border-t border-line py-4">
-            <div className="flex items-baseline justify-between gap-4">
-              <h3 className="font-medium text-head">
-                {p.media.length ? (
-                  // The button stretches over the whole row, so anywhere on it opens the screens.
-                  <button onClick={() => onOpen(p)} className="text-left after:absolute after:inset-0 group-hover:text-accent">
-                    {p.name}
-                  </button>
-                ) : (
-                  p.name
-                )}
-              </h3>
-              {p.media.length > 0 && (
-                <span aria-hidden="true" className="shrink-0 font-mono text-xs uppercase tracking-widest text-accent">
-                  View screens →
-                </span>
-              )}
-            </div>
-            <p className="mt-1 line-clamp-2 max-w-prose text-sm leading-relaxed">{p.summary}</p>
-            <p className="mt-2 font-mono text-xs text-ink">{p.areas?.join(' · ')}</p>
-          </li>
-        ))}
-      </ul>
-    </>
   )
 }
 
@@ -409,36 +190,6 @@ function Stack({ items }) {
   )
 }
 
-// Projects that ran at a stop; each opens the viewer with that stop's own screens and numbers.
-function Built({ at, onOpen }) {
-  const built = projects.filter((x) => x.ports?.includes(at))
-  if (!built.length) return null
-  return (
-    // Phones: full width over the globe, on a solid panel so it stays readable.
-    <ul className="mt-8 space-y-6 border-l border-line pl-5 max-lg:rounded-r-md max-lg:bg-bg/90 max-lg:py-4 max-lg:pr-4">
-      {built.map((x) => {
-        const media = x.portMedia?.[at] ?? x.media
-        return (
-          <li key={x.id}>
-            <h4 className="font-medium text-head">{x.name}</h4>
-            <p className="mt-1 max-w-prose text-sm leading-relaxed">{x.summary}</p>
-            <Stats items={x.portStats?.[at] ?? x.stats} />
-            <Sites items={x.sites} />
-            {media.length > 0 && (
-              <button
-                onClick={() => onOpen({ ...x, media, stats: x.portStats?.[at] ?? x.stats })}
-                className="mt-1 min-h-11 font-mono text-xs uppercase tracking-widest text-accent hover:underline"
-              >
-                View screens →
-              </button>
-            )}
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
-
 const CASE_PARTS = [
   ['situation', 'Situation'],
   ['diagnosis', 'What I found'],
@@ -486,122 +237,6 @@ function CaseStudy({ c, open, onOpen }) {
   )
 }
 
-function PortStop({ p, n, active, onOpen }) {
-  return (
-    <article
-      data-stop={p.id}
-      data-nav="journey"
-      className={`reveal min-h-[70vh] py-12 transition-opacity duration-500 lg:min-h-[80vh] ${active ? '' : 'lg:opacity-70'}`}
-    >
-      {/* Phones: the heading keeps clear of the globe on the right; the project list below runs full width. */}
-      <div className="pr-[34vw] lg:pr-0">
-        <p className="font-mono text-xs uppercase tracking-widest text-accent">
-          {String(n + 1).padStart(2, '0')}
-          {p.when && ` · ${p.when}`}
-        </p>
-        <h3 className="mt-3 text-2xl font-semibold text-head sm:text-3xl">{p.port}</h3>
-        <p className="mt-1 text-sm">{p.place}</p>
-        <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-ink">
-          {p.facts.map((f) => (
-            <li key={f}>{f}</li>
-          ))}
-        </ul>
-        {p.role && <p className="mt-6 text-head">{p.role}</p>}
-        {p.text && <p className="mt-2 max-w-prose leading-relaxed">{p.text}</p>}
-      </div>
-      <Built at={p.id} onOpen={onOpen} />
-    </article>
-  )
-}
-
-// GitHub contribution calendar: columns are weeks, rows are days, amber by activity level.
-function Commits({ data }) {
-  const cols = Math.max(...data.days.map((d) => d.col)) + 1
-  return (
-    <div className="mt-12">
-      <h3 className="font-mono text-xs uppercase tracking-widest text-head">Code, last 6 months</h3>
-      {/* The line below gives the total, so screen readers skip the 180-odd cells. */}
-      <div aria-hidden="true" className="mt-4 grid gap-[3px]" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 12px))` }}>
-        {data.days.map((d) => (
-          <span
-            key={`${d.row}-${d.col}`}
-            title={d.tip}
-            className="aspect-square rounded-[2px]"
-            style={{ gridRow: d.row + 1, gridColumn: d.col + 1, background: d.level ? `rgb(var(--accent) / ${0.2 + d.level * 0.2})` : 'rgb(var(--line))' }}
-          />
-        ))}
-      </div>
-      <p className="mt-3 font-mono text-xs text-ink">
-        {data.total} contributions on{' '}
-        <a href="https://github.com/shubhamshnd" target="_blank" rel="noreferrer" className="text-accent hover:underline">
-          GitHub
-        </a>
-      </p>
-    </div>
-  )
-}
-
-function Steps({ title, steps }) {
-  return (
-    <div>
-      <h4 className="font-mono text-xs uppercase tracking-widest text-head">{title}</h4>
-      <ol className="mt-3 space-y-3 border-l border-line pl-5 text-sm">
-        {steps.map(([who, what], i) => (
-          <li key={i}>
-            <span className="font-mono text-xs text-accent">{who}</span>
-            <p className="mt-0.5 leading-relaxed">{what}</p>
-          </li>
-        ))}
-      </ol>
-    </div>
-  )
-}
-
-// A made-up requirements pack: as-is and to-be process, problems, requirements and success measures.
-function Sample() {
-  return (
-    <div id="sample-brd" className="mt-12 scroll-mt-16 rounded-lg border border-line bg-panel p-5">
-      <h3 className="text-lg font-semibold text-head">Sample requirements pack: {sample.title}</h3>
-      <p className="mt-2 max-w-prose text-sm leading-relaxed">{sample.note}</p>
-      <div className="mt-6 grid gap-8 sm:grid-cols-2">
-        <Steps title={`As is · ${sample.asIs.length} steps`} steps={sample.asIs} />
-        <Steps title={`To be · ${sample.toBe.length} steps`} steps={sample.toBe} />
-      </div>
-      <h4 className="mt-8 font-mono text-xs uppercase tracking-widest text-head">What breaks today</h4>
-      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm marker:text-accent">
-        {sample.pains.map((x) => (
-          <li key={x}>{x}</li>
-        ))}
-      </ul>
-      <h4 className="mt-8 font-mono text-xs uppercase tracking-widest text-head">Functional requirements</h4>
-      <table className="mt-3 w-full text-left text-sm">
-        <thead className="font-mono text-xs uppercase tracking-widest text-ink">
-          <tr>
-            <th className="py-2 pr-3 font-normal">ID</th>
-            <th className="py-2 pr-3 font-normal">Requirement</th>
-            <th className="py-2 font-normal">Priority</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sample.requirements.map(([id, text, pri]) => (
-            <tr key={id} className="border-t border-line align-top">
-              <td className="whitespace-nowrap py-2 pr-3 font-mono text-xs text-accent">{id}</td>
-              <td className="py-2 pr-3 leading-relaxed">{text}</td>
-              <td className="py-2 font-mono text-xs text-head">{pri}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h4 className="mt-8 font-mono text-xs uppercase tracking-widest text-head">How we'll know it worked</h4>
-      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm marker:text-accent">
-        {sample.success.map((x) => (
-          <li key={x}>{x}</li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 function CopyEmail() {
   const [done, setDone] = useState(false)
   const copy = () =>
@@ -619,34 +254,173 @@ function CopyEmail() {
   )
 }
 
-export default function Portfolio({ commits }) {
-  const desktop = useDesktop()
-  const [stop, setStop] = useState('about')
-  const [nav, setNav] = useState('about')
+
+const byId = (id) => projects.find((p) => p.id === id)
+
+// The 3D terminal with its zone buttons; the panel lists what I built for the picked zone.
+function TerminalSection({ onOpen }) {
+  const [zone, setZone] = useState(null)
+  const z = zones.find((x) => x.id === zone)
+  const pick = (id) => {
+    setZone(id)
+    if (id) track('Zone opened', { zone: id })
+  }
+  return (
+    <section id="terminal" data-nav="terminal" className="scroll-mt-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 className="label">A terminal, system by system</h2>
+        <p className="max-w-prose text-head">
+          Every system I've built has a place in the port. Pick a zone to see what runs there.
+          <span className="max-sm:hidden"> Drag to look around.</span>
+        </p>
+      </div>
+      <div className="relative mt-6 h-[62vh] min-h-[380px] w-full border-y border-line bg-[radial-gradient(ellipse_at_center,rgb(var(--panel))_0%,rgb(var(--bg))_70%)] sm:h-[72vh]">
+        <Terminal active={zone} onSelect={pick} />
+        {z && (
+          <div className="fade absolute bottom-3 right-3 top-3 z-10 hidden w-[380px] overflow-y-auto rounded-lg border border-line bg-bg/92 p-5 backdrop-blur md:block">
+            <ZoneBody z={z} onOpen={onOpen} onClose={() => pick(null)} />
+          </div>
+        )}
+      </div>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0" role="group" aria-label="Terminal zones">
+          {zones.map((x, i) => (
+            <button
+              key={x.id}
+              onClick={() => pick(zone === x.id ? null : x.id)}
+              aria-pressed={zone === x.id}
+              className={`min-h-11 shrink-0 rounded-full border px-4 text-sm ${zone === x.id ? 'border-accent bg-accent text-bg' : 'border-line text-head hover:border-accent'}`}
+            >
+              <span className="font-mono text-xs opacity-70">{i + 1}</span> {x.name}
+            </button>
+          ))}
+        </div>
+        {/* Phones and tablets: the zone panel sits under the scene instead of over it. */}
+        {z && (
+          <div className="fade mt-4 rounded-lg border border-line bg-panel p-5 md:hidden">
+            <ZoneBody z={z} onOpen={onOpen} onClose={() => pick(null)} />
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function ZoneBody({ z, onOpen, onClose }) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-lg font-semibold text-head">{z.name}</h3>
+        <button onClick={onClose} className="min-h-11 shrink-0 font-mono text-xs text-ink hover:text-accent" aria-label="Back to the whole terminal">
+          ✕
+        </button>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed">{z.text}</p>
+      <ul className="mt-4 space-y-3">
+        {z.projects.map(byId).filter(Boolean).map((p) => (
+          <li key={p.id} className="border-t border-line pt-3">
+            <p className="font-medium text-head">{p.name}</p>
+            <p className="mt-1 line-clamp-3 text-sm leading-relaxed">{p.summary}</p>
+            <Stats items={p.stats} />
+            <Sites items={p.sites} />
+            {p.media.length > 0 && (
+              <button onClick={() => onOpen(p)} className="mt-1 min-h-11 font-mono text-xs uppercase tracking-widest text-accent hover:underline">
+                View screens →
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
+// Work: every project as a card with its first screen, filtered by area.
+function Work({ onOpen }) {
+  const [area, setArea] = useState('All')
+  const shown = projects.filter((p) => hasArea(p, area))
+  return (
+    <>
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter work">
+        {AREAS.map((a) => (
+          <button
+            key={a}
+            onClick={() => setArea(a)}
+            aria-pressed={area === a}
+            className={`min-h-11 rounded-full border px-4 font-mono text-xs ${area === a ? 'border-accent bg-accent text-bg' : 'border-line text-ink hover:text-head'}`}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+      <p className="mt-4 font-mono text-xs text-ink" aria-live="polite">
+        {area === 'All' ? `${projects.length} projects` : `${shown.length} of ${projects.length} projects in ${area}`}
+      </p>
+      <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {shown.map((p) => (
+          <li key={p.id} id={p.id} className="group relative flex scroll-mt-20 flex-col rounded-lg border border-line bg-panel p-3 hover:border-accent/60">
+            <Thumb project={p} />
+            <h3 className="mt-3 px-1 font-medium text-head">
+              {p.media.length ? (
+                <button onClick={() => onOpen(p)} className="text-left after:absolute after:inset-0 group-hover:text-accent">
+                  {p.name}
+                </button>
+              ) : (
+                p.name
+              )}
+            </h3>
+            <p className="mt-1 line-clamp-3 px-1 text-sm leading-relaxed">{p.summary}</p>
+            <p className="mt-auto px-1 pt-3 font-mono text-xs text-ink">{p.areas?.join(' · ')}</p>
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
+const BTN = 'inline-flex min-h-11 items-center rounded-md px-5 font-medium'
+
+function Actions({ from }) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from })} className={`${BTN} bg-accent text-bg hover:bg-accent/90`}>
+        Email me
+      </a>
+      <a href="/resume" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from })} className={`${BTN} border border-line text-head hover:border-accent`}>
+        Résumé ↗
+      </a>
+      <a href={profile.links[0].href} target="_blank" rel="noreferrer" onClick={() => track('LinkedIn opened', { from })} className={`${BTN} border border-line text-head hover:border-accent`}>
+        LinkedIn ↗
+      </a>
+    </div>
+  )
+}
+
+export default function Portfolio() {
+  const [nav, setNav] = useState(null)
   const [open, setOpen] = useState(null)
 
-  // Whatever crosses the middle of the screen drives the globe and the nav. Each section is counted once
-  // per visit, to see how far people read.
+  // The section crossing the middle of the screen lights its nav link. Each section is counted once per visit.
   useEffect(() => {
     const seen = new Set()
     const io = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (!e.isIntersecting) return
-          setStop(e.target.dataset.stop)
+          const id = e.target.id
           setNav(e.target.dataset.nav)
-          const section = e.target.closest('section')?.id || 'top'
-          if (seen.has(section)) return
-          seen.add(section)
-          track('Section reached', { section })
+          if (seen.has(id)) return
+          seen.add(id)
+          track('Section reached', { section: id })
         }),
       { rootMargin: '-50% 0px -50% 0px' },
     )
-    document.querySelectorAll('[data-stop]').forEach((el) => io.observe(el))
+    document.querySelectorAll('section[id]').forEach((el) => io.observe(el))
     return () => io.disconnect()
-  }, [desktop])
+  }, [])
 
   const openProject = (p) => transition(() => setOpen(p))
+  const close = () => transition(() => setOpen(null))
 
   // Share links: /#portbird scrolls to that project and opens its screens; /#case-portbird opens that case study.
   useEffect(() => {
@@ -657,203 +431,146 @@ export default function Portfolio({ commits }) {
       if (el.tagName === 'DETAILS') el.open = true
       el.scrollIntoView({ block: 'start' })
       track('Share link opened', { id })
-      const p = projects.find((x) => x.id === id)
+      const p = byId(id)
       if (p?.media.length) setOpen(p)
     }
     go()
     addEventListener('hashchange', go)
     return () => removeEventListener('hashchange', go)
   }, [])
-  const close = () => transition(() => setOpen(null))
+
+  const wrap = 'mx-auto max-w-6xl px-4 sm:px-6'
 
   return (
-    <div className="mx-auto max-w-screen-xl px-6 md:px-12 lg:flex lg:justify-between lg:gap-12 lg:px-20">
-      <Backdrop />
-      {desktop && <Beam stop={stop} />}
-      <header
-        {...(desktop === false && { 'data-stop': 'about', 'data-nav': 'top' })}
-        className="relative z-10 flex flex-col pb-12 pt-16 lg:sticky lg:top-0 lg:h-screen lg:w-1/2 lg:pb-12 lg:pt-12"
-      >
-        <h1 className="text-4xl font-bold tracking-tight text-head sm:text-5xl">{profile.name}</h1>
-        <h2 className="mt-3 text-lg font-medium text-head">{profile.title}</h2>
-        <p className="mt-1 font-mono text-sm text-accent">{profile.domains}</p>
-        <p className="mt-4 max-w-md border-l-2 border-accent pl-3 text-sm text-head">{profile.openTo}</p>
-
-        {/* One row so the globe gets the height. */}
-        <nav className="mt-6 hidden lg:block" aria-label="Sections">
-          <ul className="flex gap-6">
-            {NAV.map((s) => (
-              <li key={s.id}>
-                <a
-                  href={`#${s.id}`}
-                  className={`border-b pb-1 font-mono text-xs uppercase tracking-widest transition-colors ${nav === s.id ? 'border-accent text-head' : 'border-transparent text-ink hover:text-head'}`}
-                >
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Slot is always there so the page doesn't jump when the globe mounts. */}
-        <div className="hidden min-h-0 flex-1 items-center lg:flex">{desktop && <GlobePanel stop={stop} />}</div>
-
-        <ul className="mt-6 flex flex-wrap gap-2 font-mono text-sm lg:mt-4 lg:gap-x-6 lg:gap-y-2">
-          <li>
-            <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from: 'header' })} className={`${HEADER_LINK} border-accent text-accent hover:underline`}>
-              Email
-            </a>
-          </li>
-          <Links />
-        </ul>
-      </header>
-
-      {/* Phones: one globe pinned half off the right edge; text runs beside it. Gone by Contact. */}
-      {desktop === false && (
-        <div className={`side-globe ${nav === 'top' || nav === 'journey' ? '' : nav === 'contact' ? 'side-globe--off' : 'side-globe--dim'}`} aria-hidden="true">
-          <Globe stop={stop} shift={0.24} />
-        </div>
-      )}
-
-      {/* Phones: Email and Résumé stay in reach between the header and Contact. */}
-      {desktop === false && (
-        <div
-          className={`fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-line bg-bg/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 transition-transform duration-300 ${nav === 'top' || nav === 'contact' ? 'translate-y-full' : ''}`}
-          inert={nav === 'top' || nav === 'contact' ? '' : undefined}
-        >
-          <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from: 'phone bar' })} className="flex min-h-11 flex-1 items-center justify-center rounded-md bg-accent font-medium text-bg">
-            Email me
+    <>
+      <header className="sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur">
+        <div className={`${wrap} flex h-14 items-center justify-between gap-4`}>
+          <a href="#top" className="font-semibold text-head">
+            {profile.name}
           </a>
-          <a href="/resume" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'phone bar' })} className="flex min-h-11 flex-1 items-center justify-center rounded-md border border-line font-medium text-head">
+          <nav aria-label="Sections" className="max-md:hidden">
+            <ul className="flex gap-6">
+              {NAV.map((s) => (
+                <li key={s.id}>
+                  <a href={`#${s.id}`} className={`font-mono text-xs uppercase tracking-widest ${nav === s.id ? 'text-accent' : 'text-ink hover:text-head'}`}>
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <a href="/resume" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'header' })} className="inline-flex min-h-11 items-center font-mono text-xs uppercase tracking-widest text-accent hover:underline">
             Résumé ↗
           </a>
         </div>
-      )}
+      </header>
 
-      <main className="relative z-10 lg:w-1/2 lg:py-24">
-        <section id="about" data-stop="about" data-nav="about" className="scroll-mt-16 lg:min-h-[60vh]">
-          <h2 className="label">About</h2>
-          <p className="max-w-prose text-2xl font-medium leading-snug text-head sm:text-3xl">{profile.lead}</p>
-          {/* The numbers come straight after the lead, so they're on the first screen. */}
-          <dl className="mt-8 grid grid-cols-2 gap-4 border-y border-line py-6 sm:grid-cols-4">
+      <main id="top">
+        <section id="about" data-nav="about" className={`${wrap} pb-14 pt-14 sm:pt-20`}>
+          <p className="font-mono text-xs uppercase tracking-widest text-accent">{profile.title}</p>
+          <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-head sm:text-6xl">{profile.lead}</h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed">
+            {profile.name}, {profile.role} at {profile.company}. {profile.domains}.
+          </p>
+          <p className="mt-5 max-w-2xl border-l-2 border-accent pl-4 text-head">{profile.openTo}</p>
+          <div className="mt-8">
+            <Actions from="hero" />
+          </div>
+          <dl className="mt-12 grid grid-cols-2 gap-6 border-y border-line py-6 lg:grid-cols-4">
             {profile.highlights.map((h) => (
               <div key={h.label} className="flex flex-col-reverse justify-end">
-                <dt className="mt-1 text-xs leading-snug sm:text-sm">{h.label}</dt>
-                <dd className="font-mono text-2xl font-medium text-accent sm:text-3xl">{h.value}</dd>
+                <dt className="mt-1 text-sm leading-snug">{h.label}</dt>
+                <dd className="font-mono text-3xl font-medium text-accent sm:text-4xl">{h.value}</dd>
               </div>
             ))}
           </dl>
-          <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 font-mono text-xs">
-            {[
-              ['Now', `${profile.role}, ${profile.company}`],
-              ['Studying', profile.education],
-              ['Experience', profile.experience],
-              ['Based in', profile.location],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <dt className="uppercase tracking-widest text-ink">{k}</dt>
-                <dd className="mt-1 text-head">{v}</dd>
-              </div>
+        </section>
+
+        <TerminalSection onOpen={openProject} />
+
+        <section id="profile" data-nav="terminal" className={`${wrap} mt-24 grid gap-12 lg:grid-cols-[1.2fr_1fr]`}>
+          <div>
+            <h2 className="label">About</h2>
+            {profile.intro.map((t) => (
+              <p key={t} className="mb-5 max-w-prose leading-relaxed">
+                {t}
+              </p>
             ))}
-          </dl>
-          {profile.intro.map((t) => (
-            <p key={t} className="mt-5 max-w-prose leading-relaxed">
-              {t}
-            </p>
-          ))}
-          <p className="mt-10 font-mono text-xs text-ink">Scroll to follow the route ↓</p>
+            <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 font-mono text-xs">
+              {[
+                ['Now', `${profile.role}, ${profile.company}`],
+                ['Studying', profile.education],
+                ['Experience', profile.experience],
+                ['Based in', profile.location],
+              ].map(([k, v]) => (
+                <div key={k}>
+                  <dt className="uppercase tracking-widest text-ink">{k}</dt>
+                  <dd className="mt-1 text-head">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div id="abroad" className="rounded-lg border border-accent/40 bg-panel p-6">
+            <h2 className="font-mono text-xs uppercase tracking-widest text-accent">For hiring teams outside India</h2>
+            <dl className="mt-5 space-y-4 text-sm leading-relaxed">
+              {abroad.map(([k, v]) => (
+                <div key={k}>
+                  <dt className="font-mono text-xs uppercase tracking-widest text-head">{k}</dt>
+                  <dd className="mt-1">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </section>
 
-        <section id="journey" className="mt-24 scroll-mt-16">
-          <h2 className="label">Journey</h2>
-          {journey.map((p, n) => (
-            <PortStop key={p.id} p={p} n={n} active={stop === p.id} onOpen={openProject} />
-          ))}
-          <article data-stop="network" data-nav="journey" className={`reveal min-h-[70vh] py-12 transition-opacity duration-500 ${stop === 'network' ? '' : 'lg:opacity-70'}`}>
-            <div className="pr-[34vw] lg:pr-0">
-              <p className="font-mono text-xs uppercase tracking-widest text-accent">{String(journey.length + 1).padStart(2, '0')} · Network</p>
-              <h3 className="mt-3 text-2xl font-semibold text-head sm:text-3xl">JSW Infrastructure</h3>
-              <p className="mt-1 text-sm">Ten port concessions in India, plus Fujairah and Dibba in the UAE.</p>
-              <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-ink">
-                {network.map((p) => (
-                  <li key={p.name}>{p.name}</li>
-                ))}
-              </ul>
-            </div>
-            <Built at="network" onOpen={openProject} />
-          </article>
+        <section id="ports" data-nav="terminal" className={`${wrap} mt-24`}>
+          <h2 className="label">Ports I've worked at</h2>
+          <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {journey.map((p, n) => (
+              <li key={p.id} className="rounded-lg border border-line p-5">
+                <p className="font-mono text-xs text-accent">
+                  {String(n + 1).padStart(2, '0')}
+                  {p.when && ` · ${p.when}`}
+                </p>
+                <h3 className="mt-2 font-semibold text-head">{p.port}</h3>
+                <p className="text-sm">{p.place}</p>
+                <p className="mt-3 font-mono text-xs text-ink">{p.facts.join(' · ')}</p>
+                <p className="mt-3 text-sm text-head">
+                  {projects
+                    .filter((x) => x.ports?.includes(p.id))
+                    .map((x) => x.name)
+                    .join(', ')}
+                </p>
+              </li>
+            ))}
+            <li className="rounded-lg border border-line p-5">
+              <p className="font-mono text-xs text-accent">{String(journey.length + 1).padStart(2, '0')} · Network</p>
+              <h3 className="mt-2 font-semibold text-head">JSW Infrastructure</h3>
+              <p className="text-sm">Port concessions across India, plus Fujairah and Dibba in the UAE.</p>
+              <p className="mt-3 font-mono text-xs text-ink">{network.map((x) => x.name).join(' · ')}</p>
+            </li>
+          </ol>
         </section>
 
-        <section id="work" data-stop="network" data-nav="work" className="mt-24 scroll-mt-16">
-          <h2 className="label">Work</h2>
-          <Work onOpen={openProject} />
-        </section>
-
-        <section id="cases" data-stop="network" data-nav="cases" className="mt-32 scroll-mt-16">
+        <section id="cases" data-nav="cases" className={`${wrap} mt-28 scroll-mt-20`}>
           <h2 className="label">Case studies</h2>
-          <div className="space-y-4">
-            {cases.map((c, i) => (
+          <div className="grid items-start gap-4 lg:grid-cols-2">
+            {cases.slice(0, 4).map((c, i) => (
               <CaseStudy key={c.project} c={c} open={i === 0} onOpen={openProject} />
             ))}
           </div>
         </section>
 
-        <section id="method" data-stop="network" data-nav="cases" className="mt-32 scroll-mt-16">
-          <h2 className="label">How I work</h2>
-          <ol className="grid gap-5 sm:grid-cols-2">
-            {method.map((m, i) => (
-              <li key={m.step} className="reveal">
-                <p className="font-mono text-xs text-accent">{String(i + 1).padStart(2, '0')}</p>
-                <h3 className="mt-1 font-medium text-head">{m.step}</h3>
-                <p className="mt-1 text-sm leading-relaxed">{m.text}</p>
-              </li>
-            ))}
-          </ol>
-          <h3 className="mt-12 font-mono text-xs uppercase tracking-widest text-head">Working with people</h3>
-          <ul className="mt-4 space-y-2 border-l border-line pl-5 text-sm leading-relaxed">
-            {leadership.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-          <Sample />
+        <section id="work" data-nav="work" className={`${wrap} mt-28 scroll-mt-20`}>
+          <h2 className="label">All work</h2>
+          <Work onOpen={openProject} />
         </section>
 
-        <section id="skills" data-stop="network" data-nav="cases" className="mt-24 scroll-mt-16">
-          <h2 className="label">Skills and tools</h2>
-          <div className="space-y-10">
-            {Object.entries(capabilities).map(([group, items]) => (
-              <div key={group}>
-                <h3 className="font-mono text-xs uppercase tracking-widest text-head">{group}</h3>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {items.map((c) => (
-                    <li key={c} className="rounded border border-line px-2.5 py-1 text-xs text-head">
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h3 className="font-mono text-xs uppercase tracking-widest text-head">Technology</h3>
-              <ul className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-5">
-                {tech.map(([name, icon]) => (
-                  <li key={name} className="flex flex-col items-center gap-2 rounded border border-line px-1 py-3 text-head/80 transition-colors hover:border-accent/50 hover:text-accent">
-                    {/* Monochrome via mask so every logo takes the text colour. */}
-                    <span aria-hidden="true" className="h-6 w-6 bg-current" style={{ mask: `url(/icons/${icon}.svg) center / contain no-repeat`, WebkitMask: `url(/icons/${icon}.svg) center / contain no-repeat` }} />
-                    <span className="text-center font-mono text-xs leading-tight">{name}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          {commits && <Commits data={commits} />}
-        </section>
-
-        <section id="words" data-stop="network" data-nav="cases" className="mt-32 scroll-mt-16">
+        <section id="words" data-nav="words" className={`${wrap} mt-28 scroll-mt-20`}>
           <h2 className="label">What people say</h2>
           <div className="grid gap-5 sm:grid-cols-2">
             {testimonials.map((t, i) => (
-              <figure key={t.name} className={`reveal flex flex-col rounded-lg border border-line bg-panel p-5 ${i === 0 || i === testimonials.length - 1 ? 'sm:col-span-2' : ''}`}>
+              <figure key={t.name} className={`reveal flex flex-col rounded-lg border border-line bg-panel p-5 ${i === 0 ? 'sm:col-span-2' : ''}`}>
                 <blockquote className={`flex-1 leading-relaxed text-head ${i === 0 ? 'text-lg' : 'text-sm'}`}>
                   <span className="mr-1 font-mono text-accent" aria-hidden="true">“</span>
                   {t.quote}
@@ -868,26 +585,24 @@ export default function Portfolio({ commits }) {
           </div>
         </section>
 
-        <section id="contact" data-stop="network" data-nav="contact" className="mt-32 min-h-[50vh] scroll-mt-16 pb-24">
+        <section id="skills" data-nav="words" className={`${wrap} mt-20`}>
+          <h2 className="label">Skills</h2>
+          <p className="max-w-4xl text-sm leading-relaxed text-head">{capabilities.Advisory.join(' · ')}</p>
+          <p className="mt-3 max-w-4xl font-mono text-xs leading-relaxed">{tech.map(([n]) => n).join(' · ')}</p>
+        </section>
+
+        <section id="contact" data-nav="contact" className={`${wrap} mt-28 scroll-mt-20 pb-28`}>
           <h2 className="label">Contact</h2>
-          <p className="max-w-prose text-2xl font-medium leading-snug text-head">Email is the quickest way to reach me. I reply within a day or two.</p>
-          <p className="mt-3 max-w-prose">{profile.openTo}</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a href={`mailto:${profile.email}`} onClick={() => track('Email clicked', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md bg-accent px-5 font-medium text-bg hover:bg-accent/90">
-              Email me
-            </a>
-            <a href={profile.links[0].href} target="_blank" rel="noreferrer" onClick={() => track('LinkedIn opened', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
-              LinkedIn ↗
-            </a>
-            <a href="/resume" target="_blank" rel="noreferrer" onClick={() => track('Résumé opened', { from: 'contact' })} className="inline-flex min-h-11 items-center rounded-md border border-line px-5 font-medium text-head hover:border-accent">
-              Résumé ↗
-            </a>
+          <p className="max-w-3xl text-3xl font-medium leading-snug text-head">Hiring for a port or terminal? Email is the quickest way to reach me. I reply within a day or two.</p>
+          <p className="mt-4 max-w-2xl">{profile.openTo}</p>
+          <div className="mt-8">
+            <Actions from="contact" />
           </div>
           <CopyEmail />
         </section>
       </main>
 
       {open && <Viewer project={open} onClose={close} />}
-    </div>
+    </>
   )
 }

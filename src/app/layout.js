@@ -7,13 +7,14 @@ const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' })
 
 const description =
-  'Digital transformation and process automation: turning manual processes into working systems, from requirements and BRDs to ERP and SAP integration, automated reporting, dashboards and AI. Built and rolled out across seven JSW Infrastructure sites. Open to Digital Transformation Consultant, Business Analyst and Solution Consultant roles.'
+  'Port operations and digital transformation: berth planning, port management systems, terminal KPIs, SAP and GST integration, dashboards and AI, built and rolled out across seven JSW Infrastructure port sites. Berth utilization up from 65% to 68%. Open to port and terminal roles in the UAE, Saudi Arabia, Qatar, Oman, Singapore and Europe.'
+const title = 'Shubham Shinde · Port Operations & Digital Transformation'
 
 export const metadata = {
   metadataBase: new URL(SITE),
-  title: 'Shubham Shinde · Digital Transformation & Process Automation',
+  title,
   description,
-  openGraph: { title: 'Shubham Shinde · Digital Transformation & Process Automation', description, url: SITE, type: 'website' },
+  openGraph: { title, description, url: SITE, type: 'website' },
   twitter: { card: 'summary_large_image' },
 }
 

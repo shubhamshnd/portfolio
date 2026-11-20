@@ -14,8 +14,6 @@
 
 html {
   scroll-behavior: smooth;
-  /* The phone globe and the Work gallery (before it slides in) hang off the right edge; on body alone
-     this doesn't stop the window itself scrolling sideways. */
   overflow-x: clip;
 }
 
@@ -40,7 +38,7 @@ body {
   @apply mb-8 font-mono text-xs uppercase tracking-widest text-head;
 }
 
-/* Dot-matrix placeholder, same language as the globe. */
+/* Dot-matrix placeholder for projects without screens. */
 .dots {
   background-image: radial-gradient(rgb(var(--line)) 1px, transparent 1px);
   background-size: 12px 12px;
@@ -100,61 +98,17 @@ html:has(dialog[open]) {
   }
 }
 
-/* Phones: globe pinned to the right edge, half off-screen, behind the text. */
-.side-globe {
-  position: fixed;
-  z-index: 0;
-  top: 50%;
-  right: -45vw;
-  width: 90vw;
-  translate: 0 -50%;
-  pointer-events: none;
-  transition: opacity 0.6s ease;
+/* Hotspot pulse on the 3D terminal. */
+@media (prefers-reduced-motion: no-preference) {
+  .ping {
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
 }
 
-.side-globe--dim {
-  opacity: 0.18;
-}
-
-.side-globe--off {
-  opacity: 0;
-}
-
-/* Page background: chart grid (drifts with scroll), cursor glow, grid lit around the cursor. */
-.backdrop {
-  --mx: 70vw;
-  --my: 30vh;
-  --gy: 0px;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.backdrop-grid {
-  position: absolute;
-  inset: 0 0 auto;
-  height: calc(100% + 64px);
-  --line: rgb(125 162 209 / 0.045);
-  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 64px 64px;
-  will-change: transform;
-}
-
-.backdrop-grid::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  --line: rgb(125 162 209 / 0.22);
-  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 64px 64px;
-  -webkit-mask-image: radial-gradient(280px circle at var(--mx) calc(var(--my) + var(--gy)), #000, transparent 70%);
-  mask-image: radial-gradient(280px circle at var(--mx) calc(var(--my) + var(--gy)), #000, transparent 70%);
-}
-
-.backdrop-glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(640px circle at var(--mx) var(--my), rgb(37 84 160 / 0.14), transparent 75%);
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
 }

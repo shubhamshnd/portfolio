@@ -5,28 +5,28 @@ export const SITE = 'https://www.shubhamshnd.in'
 
 export const profile = {
   name: 'Shubham Shinde',
-  title: 'Digital Transformation · Process Automation',
-  domains: 'Requirements Gathering · Process Design · Automation · AI',
-  // Above the fold: what I'm looking for.
-  openTo: 'Open to Digital Transformation Consultant, Business Analyst and Solution Consultant roles in process automation. Mumbai, Pune or remote.',
-  lead: 'I take manual work, work out what the business needs, and automate it.',
-  // Shown as a facts row at the top of About.
+  title: 'Port Operations & Digital Transformation',
+  domains: 'Berth Planning · Port Management Systems · Terminal KPIs · Automation · AI',
+  // Above the fold: what I'm looking for, and where.
+  openTo: 'Open to port operations, terminal systems and digital transformation roles with port operators and maritime consultancies in the UAE, Saudi Arabia, Qatar, Oman, Singapore and Europe. Ready to relocate on an employer-sponsored work visa.',
+  lead: 'I make ports run on data instead of paper, from the anchorage to the invoice.',
+  // Shown as a facts row under the hero.
   role: 'Deputy Manager, Digital Solutions Engineer',
   company: 'JSW Infrastructure',
-  experience: '3+ years',
-  location: 'Navi Mumbai, India',
+  experience: '3+ years in port operations and systems',
+  location: 'Navi Mumbai, India · relocating',
   education: 'PGPM (MBA), IIM Mumbai, weekend programme · Jul 2026 – Jul 2028',
   intro: [
-    "I'm a Deputy Manager and Digital Solutions Engineer at JSW Infrastructure. For three years I've been taking work that ran on paper, Excel and phone calls and turning it into software. So far that has been at ports, but the problems are the same in a plant, a warehouse or a back office.",
-    "I like to start on the ground. I sit with the people doing the work, see where their time goes, and write down what the business actually needs before anyone talks about software. That usually becomes a BRD that operations, finance and IT all agree on. Then I design the solution and build it myself.",
-    "Most of what I make is workflow apps, ERP and SAP integrations, automated reports and dashboards and, more and more, AI tools that answer questions from business data. I'm now doing a weekend PGPM at IIM Mumbai alongside my job, so I can make the business case for a system as well as build it.",
+    "I'm a Deputy Manager and Digital Solutions Engineer at JSW Infrastructure, India's second-largest private port operator. For three years I've worked inside its bulk and liquid terminals, taking the work that ran on paper, Excel and phone calls and turning it into systems the berth, yard, gate and finance teams use every shift.",
+    "I start on the quay, not in a meeting room. I sit with shift in-charges, planners and finance, see where the hours and the demurrage go, and write down what the terminal needs. That becomes a requirements document operations, finance and IT all sign. Then I design the solution and build it myself, and roll it out port by port.",
+    "The results are operational: berth utilization at Dharamtar up from 65% to 68% after we started predicting barge and MBC arrivals to within ±17 minutes, invoices that post to SAP without re-entry, and one live view of every JSW port. I'm doing a weekend PGPM at IIM Mumbai alongside, so I can make the commercial case for a change as well as deliver it.",
   ],
-  // Headline numbers in About.
+  // Headline numbers in the hero. All confirmed by Shubham (see PRODUCT.md).
   highlights: [
-    { value: '50+', label: 'in-house projects delivered' },
-    { value: '7', label: 'sites running my systems' },
-    { value: '7,500', label: 'hours of manual work removed a year' },
-    { value: '90+', label: 'reports automated' },
+    { value: '65→68%', label: 'berth utilization at Dharamtar' },
+    { value: '±17 min', label: 'barge and MBC arrival prediction' },
+    { value: '7', label: 'port sites running my systems' },
+    { value: '7,500 h', label: 'manual work removed a year' },
   ],
   email: 'shubhamshindesunil.work@gmail.com',
   links: [
@@ -36,8 +36,57 @@ export const profile = {
   ],
 }
 
-// Globe stops, in scroll order. location = [lat, lon].
-// ponytail: coordinates are approximate, good enough at globe zoom.
+// The 3D terminal: each zone is a part of a port, with the systems I built for it.
+// id matches a hotspot in components/terminal.js; projects = ids in `projects`.
+export const zones = [
+  {
+    id: 'anchorage',
+    name: 'Anchorage and berth planning',
+    text: 'Barges and mother-vessel MBCs are predicted to within ±17 minutes, so the berthing sequence and cargo priorities are set before they arrive. Berth utilization went from 65% to 68%.',
+    projects: ['cargo-prediction'],
+  },
+  {
+    id: 'quay',
+    name: 'Quay and vessel operations',
+    text: 'Vessel calls, barge and MBC operations, berth allocation and services run in PortBird, the port ERP I built to replace a licensed system. Crane-side energy is read straight off PLCs and Moxa gateways.',
+    projects: ['portbird', 'jaigarh-ems', 'mangalore-ems'],
+  },
+  {
+    id: 'yard',
+    name: 'Yard and stockpiles',
+    text: 'Live yard stock by product, rake loading, berth-wise discharge and dispatch, turnaround and demurrage, per port.',
+    projects: ['jaigarh-ops', 'swpl-ops'],
+  },
+  {
+    id: 'gate',
+    name: 'Gate, weighbridge and roads',
+    text: 'Truck weights captured straight from the weighbridge, QR gate passes checked at the gate, and vehicle speed enforced with YOLO and number-plate reading.',
+    projects: ['weighbridge', 'gate-permit', 'anpr-speed'],
+  },
+  {
+    id: 'control',
+    name: 'Control room',
+    text: 'One live map of every JSW port, and an assistant that answers operations questions in plain English with the SQL behind every number.',
+    projects: ['central-dashboard', 'rag-reporting'],
+  },
+  {
+    id: 'admin',
+    name: 'Finance, HR and admin',
+    text: 'Invoices e-invoiced on the GST portal and posted to SAP automatically, 90+ reports that build themselves, and paper registers, headcount and canteen tokens moved online.',
+    projects: ['sap-gst', 'automated-reports', 'digital-logbook', 'headcount-dashboard', 'smart-canteen'],
+  },
+]
+
+// For hiring managers outside India: the practical questions, answered up front.
+export const abroad = [
+  ['Roles', 'Port operations analyst or consultant, terminal systems or TOS business analyst, port digital transformation, operations excellence.'],
+  ['Where', 'UAE, Saudi Arabia, Qatar, Oman, Singapore, the Netherlands and wider Europe. Open to other port hubs.'],
+  ['Visa', 'Needs an employer-sponsored work visa. Ready to relocate.'],
+  ['Terminals', 'Dry bulk such as coal and iron ore, liquid bulk, barge and MBC transshipment, river and deep-water ports.'],
+  ['Remote now', 'Open to remote or short project work for port operators and consultancies: requirements, process mapping, KPI dashboards and automation.'],
+]
+
+// Ports I've worked at, in order. location = [lat, lon] (approximate).
 export const journey = [
   {
     id: 'dharamtar',
@@ -351,63 +400,9 @@ export const projects = [
   },
 ]
 
-// How I work: the method, in order.
-export const method = [
-  { step: 'Go to the ground', text: 'Sit with the shift in-charges, finance and HSE teams and watch the work: who types what into which sheet, and where the time goes.' },
-  { step: 'Write the requirements', text: 'Map the process as it is and as it should be, the data it needs and who owns each step, and get the BRD signed off before choosing any software.' },
-  { step: 'Make the business case', text: 'Put a value on the hours, errors and licences involved, and compare doing nothing, buying a product and building in-house.' },
-  { step: 'Build or select', text: 'Build when the process is specific to us and we should own the data. Recommend a vendor when a product already fits.' },
-  { step: 'Roll out in phases', text: 'Start at one site, fix what the users find, then replicate to the next site with the same core and local changes.' },
-  { step: 'Drive adoption', text: 'Train the people who use it, retire the old sheet, and keep checking that the new system is the one actually in use.' },
-]
-
-// Evidence of working with stakeholders, shown under the method.
-export const leadership = [
-  'Led discovery and requirements workshops with operations, finance and HSE teams across three sites, and wrote them up as BRDs and solution designs.',
-  'Ran the build-versus-buy evaluation for PortBird and took it from proof of concept to production at two sites.',
-  'Rolled the Digital Logbook and Headcount Dashboard out to seven JSW Infrastructure sites.',
-  'Selected for the Graduate Engineer Trainee Excellence Program at MDI Gurgaon (2024).',
-]
-
-// A made-up requirements pack, shown under How I work. Invented process, so no JSW data.
-export const sample = {
-  title: 'Visitor gate passes',
-  note: "A made-up example, not a JSW document. It's the shape of what I write before anything gets built: the process as it runs today, where it breaks, how it should run, and what the system has to do.",
-  asIs: [
-    ['Visitor', 'Emails the host asking to visit'],
-    ['Host', 'Fills a paper pass request and gets the department head to sign it'],
-    ['Admin', 'Types the request into an Excel register'],
-    ['Admin', "Emails the day's list to security"],
-    ['Security', 'Prints the list and checks ID at the gate by hand'],
-    ['Security', 'Writes in and out times in the gate register'],
-  ],
-  pains: [
-    'The same details are written or typed three times',
-    'Security cannot tell if a pass was cancelled after the list went out',
-    'Nobody can say who is inside right now',
-  ],
-  toBe: [
-    ['Host', 'Raises the request online; the visitor gets a link to add their ID details'],
-    ['Department head', 'Approves or rejects on their phone'],
-    ['System', 'Sends the visitor a QR pass for the approved date'],
-    ['Security', 'Scans the QR at the gate; in and out times are recorded'],
-  ],
-  // [id, requirement, priority (MoSCoW)]
-  requirements: [
-    ['FR-01', 'A host can raise a visit request with visitor name, company, date and purpose.', 'Must'],
-    ['FR-02', 'The department head can approve or reject a request, with a reason for rejection.', 'Must'],
-    ['FR-03', 'An approved visitor receives a QR pass valid only on the approved date.', 'Must'],
-    ['FR-04', 'Scanning a pass at the gate shows valid, expired or cancelled.', 'Must'],
-    ['FR-05', 'Entry and exit times are recorded on scan.', 'Must'],
-    ['FR-06', 'Admin sees a live list of visitors on site.', 'Should'],
-    ['FR-07', 'Details of repeat visitors are filled in from past visits.', 'Could'],
-  ],
-  success: ['No paper register at the gate', 'Visitor details entered once', 'A live count of visitors on site at any time'],
-}
-
 // Capabilities, split the way a consulting team staffs them.
 export const capabilities = {
-  Advisory: ['Requirement gathering and BRDs', 'As-is and to-be process mapping', 'Business cases and build versus buy', 'Vendor and solution evaluation', 'Phased multi-site rollout', 'Adoption and change management', 'Data governance and access control'],
+  Advisory: ['Berth planning and arrival prediction', 'Terminal KPIs: berth utilization, turnaround, demurrage', 'Requirement gathering and BRDs', 'As-is and to-be process mapping', 'Business cases and build versus buy', 'Vendor and solution evaluation', 'Phased multi-site rollout', 'Adoption and change management', 'Data governance and access control'],
 }
 
 // Technology tiles: [label, Simple Icons slug in public/icons].

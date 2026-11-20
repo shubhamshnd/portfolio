@@ -27,11 +27,11 @@ export default function OG() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: 76, fontWeight: 700 }}>{profile.name}</div>
           <div style={{ fontSize: 40, marginTop: 12 }}>{profile.title}</div>
-          <div style={{ fontSize: 28, marginTop: 14, color: '#ffb020' }}>{profile.domains}</div>
+          <div style={{ fontSize: 28, marginTop: 14, color: '#ffb020' }}>{profile.highlights.slice(0, 3).map((h) => `${h.value} ${h.label}`).join('  ·  ')}</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', fontSize: 26, color: '#94a3b8' }}>
-          <div style={{ display: 'flex', borderLeft: '4px solid #ffb020', paddingLeft: 18, color: '#e2e8f0' }}>{profile.openTo}</div>
-          <div style={{ display: 'flex', marginTop: 22 }}>{`${profile.company} · ${profile.location.replace(', India', '')}`}</div>
+          <div style={{ display: 'flex', borderLeft: '4px solid #ffb020', paddingLeft: 18, color: '#e2e8f0' }}>Open to port and terminal roles in the GCC, Singapore and Europe</div>
+          <div style={{ display: 'flex', marginTop: 22 }}>{`${profile.role}, ${profile.company}`}</div>
         </div>
       </div>
     ),

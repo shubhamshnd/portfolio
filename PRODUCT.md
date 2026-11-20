@@ -8,8 +8,8 @@ web
 
 ## Users
 
-- **Primary: recruiters and employers.** Hiring consultants and recruiters at consulting firms, and companies hiring a digital transformation or process automation person. They skim fast, often on a phone, and want proof that Shubham can take a manual process from requirements to a working system.
-- **Secondary: direct clients.** Business owners or managers who might hire him on contract to automate one of their processes. They need to see what that work looks like for them, even though every example so far comes from ports.
+- **Primary: hiring managers and recruiters at port operators and maritime consultancies outside India.** DP World, AD Ports Group, PSA, APM Terminals, Saudi Global Ports, RSGT, Gulftainer, Kaleris/Navis, Haskoning and similar. They skim fast, often from a LinkedIn message, and want to know in one screen: does he know how a terminal runs, what has he changed in one, and can we hire him from India.
+- **Secondary: maritime recruiters** placing port operations, terminal systems and digital roles in the GCC, Singapore and Europe.
 
 ## Product Purpose
 
@@ -24,22 +24,18 @@ There is no contact form and no booking link.
 
 ## Positioning
 
-He covers the business side and the engineering side himself. He has sat with the people doing the work, written the BRD and built the system. His systems run across seven JSW Infrastructure sites, including an in-house ERP with SAP and GST e-invoicing, 90+ automated reports, and AI on operations data. He is also doing a PGPM (MBA) at IIM Mumbai, from Jul 2026 to Jul 2028.
+Port operations and digital transformation. He has spent three years inside dry and liquid bulk terminals turning port work (berth planning, quay, yard, gate, invoicing) into systems, and can show operational outcomes: berth utilization from 65% to 68%, barge and MBC arrivals predicted to ±17 minutes, systems at seven port sites.
 
-The ports are the proof, not the identity. The headline stays "Digital Transformation · Process Automation". It should not be narrowed to ports, and not widened to generic "Data & AI" either.
-
-Open to digital transformation and process automation consulting roles, in Mumbai, Pune or remote.
+Goal: a port or terminal role abroad (UAE, Saudi Arabia, Qatar, Oman, Singapore, Europe), paid in USD or a USD-pegged currency, by 2028. The site speaks the port industry's language (berths, MBCs, turnaround, demurrage, terminal KPIs), not generic "process automation". Never claim Navis N4 or other TOS experience he doesn't have.
 
 ## Operating Context
 
 - Visitors usually arrive from LinkedIn, a recruiter's shortlist or the résumé, and judge him within one or two screens.
-- The site is a single page:
-  - a globe that follows his career route through the JSW ports as you scroll
-  - About, Method and Journey sections
-  - a Work gallery of 15 projects (42 screens) with area filters: AI, Data, IoT/OT, ERP, Apps
-  - case studies
-  - LinkedIn recommendations
-  - technology, and a chart of his GitHub contributions over the last 6 months
+- The site is a single, short page:
+  - hero: the lead, open-to line, Email / Résumé / LinkedIn, four port KPIs
+  - a 3D terminal (three.js, `src/components/terminal.js`) with six zones; each zone lists the systems built for it (`zones` in `site.js`)
+  - About, and a "For hiring teams outside India" box (`abroad`)
+  - ports worked at, four case studies, all work as a card grid, LinkedIn recommendations, skills, contact
 - Some Indian mobile networks block *.vercel.app, so the custom domain is the address to share.
 
 ## Capabilities and Constraints
@@ -53,7 +49,7 @@ Open to digital transformation and process automation consulting roles, in Mumba
 ## Brand Commitments
 
 - **Voice: human copy.** Plain, factual, first person, with contractions. Short sentences with concrete specifics and plain verbs (built, replaced, moved). No AI-marketing taglines, puns, em-dash triplets, marketing intros under headings, or "let's talk" closers. The About section covers who he is and how he works; project specifics belong in Journey and Work.
-- Name: Shubham Shinde. Title: "Digital Transformation · Process Automation". Domains line: "Requirements Gathering · Process Design · Automation · AI".
+- Name: Shubham Shinde. Title: "Port Operations & Digital Transformation". Domains line: "Berth Planning · Port Management Systems · Terminal KPIs · Automation · AI".
 
 ## Evidence on Hand
 
@@ -66,6 +62,8 @@ Open to digital transformation and process automation consulting roles, in Mumba
   - weighbridge, gatepass and vehicle speed systems
   - digital logbook, smart canteen and headcount dashboard
 - **Headline numbers he has confirmed:**
+  - berth utilization at Dharamtar from 65% to 68%
+  - MBC and barge arrivals predicted to ±17 minutes
   - 50+ in-house projects
   - 7 sites running his systems
   - 7,500 hours of manual work removed a year
@@ -88,7 +86,7 @@ Open to digital transformation and process automation consulting roles, in Mumba
 ## Product Principles
 
 1. **Proof over claims.** Every capability should point to something he built and shipped.
-2. **Transferable, not niche.** Frame port work as process problems that exist in any plant, warehouse or back office.
+2. **Port first.** Describe work by where it sits in a terminal and what it changed operationally.
 3. **Respect the employer.** Never expose data, values or names from JSW systems.
 4. **Fast to judge.** A recruiter should get role, proof and contact within the first screen or two.
 5. **Sounds like him.** If a sentence reads like marketing, rewrite it plainly.
