@@ -57,3 +57,7 @@ contacts.db
 
 # Raw screenshots (unredacted). Only blurred copies in public/projects are published.
 /images/
+
+# Private job-search notes and local tool config
+/outreach/
+/.claude/
