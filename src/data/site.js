@@ -19,13 +19,13 @@ export const profile = {
   intro: [
     "I'm a Deputy Manager and Digital Solutions Engineer at JSW Infrastructure, India's second-largest private port operator. For three years I've worked inside its bulk and liquid terminals, taking the work that ran on paper, Excel and phone calls and turning it into systems the berth, yard, gate and finance teams use every shift.",
     "I start on the quay, not in a meeting room. I sit with shift in-charges, planners and finance, see where the hours and the demurrage go, and write down what the terminal needs. That becomes a requirements document operations, finance and IT all sign. Then I design the solution and build it myself, and roll it out port by port.",
-    "The results are operational: berth utilization at Dharamtar up from 65% to 68% after we started predicting barge and MBC arrivals to within ±17 minutes, invoices that post to SAP without re-entry, and one live view of every JSW port. I'm doing a weekend PGPM at IIM Mumbai alongside, so I can make the commercial case for a change as well as deliver it.",
+    "The results are operational: 30+ processes automated across seven sites, barge and MBC arrivals predicted so berths are planned before they arrive, invoices that post to SAP without re-entry, and one live view of every JSW port. I'm doing a weekend PGPM at IIM Mumbai alongside, so I can make the commercial case for a change as well as deliver it.",
   ],
   // Headline numbers in the hero. All confirmed by Shubham (see PRODUCT.md).
   highlights: [
-    { value: '65→68%', label: 'berth utilization at Dharamtar' },
-    { value: '±17 min', label: 'barge and MBC arrival prediction' },
+    { value: '30+', label: 'processes automated' },
     { value: '7', label: 'port sites running my systems' },
+    { value: '90+', label: 'reports automated' },
     { value: '7,500 h', label: 'manual work removed a year' },
   ],
   email: 'shubhamshindesunil.work@gmail.com',
@@ -44,7 +44,7 @@ export const zones = [
   {
     id: 'anchorage',
     name: 'Anchorage and berth planning',
-    text: 'Barges and mother-vessel MBCs are predicted to within ±17 minutes, so the berthing sequence and cargo priorities are set before they arrive. Berth utilization went from 65% to 68%.',
+    text: 'Barge and mother-vessel MBC arrivals are predicted well in advance, so the berthing sequence and cargo priorities are set before they arrive.',
     projects: ['cargo-prediction'],
   },
   {

@@ -24,7 +24,7 @@ There is no contact form and no booking link.
 
 ## Positioning
 
-Port operations and digital transformation. He has spent three years inside dry and liquid bulk terminals turning port work (berth planning, quay, yard, gate, invoicing) into systems, and can show operational outcomes: berth utilization from 65% to 68%, barge and MBC arrivals predicted to ±17 minutes, systems at seven port sites.
+Port operations and digital transformation. He has spent three years inside dry and liquid bulk terminals turning port work (berth planning, quay, yard, gate, invoicing) into systems, and can show operational outcomes: 30+ processes automated, 90+ reports automated, systems at seven port sites. Don't quote berth utilization or arrival-accuracy figures (Shubham removed them, Nov 2026).
 
 Goal: a port or terminal role abroad (UAE, Saudi Arabia, Qatar, Oman, Singapore, Europe), paid in USD or a USD-pegged currency, by 2028. The site speaks the port industry's language (berths, MBCs, turnaround, demurrage, terminal KPIs), not generic "process automation". Never claim Navis N4 or other TOS experience he doesn't have.
 
@@ -62,8 +62,7 @@ Goal: a port or terminal role abroad (UAE, Saudi Arabia, Qatar, Oman, Singapore,
   - weighbridge, gatepass and vehicle speed systems
   - digital logbook, smart canteen and headcount dashboard
 - **Headline numbers he has confirmed:**
-  - berth utilization at Dharamtar from 65% to 68%
-  - MBC and barge arrivals predicted to ±17 minutes
+  - 30+ processes automated
   - 50+ in-house projects
   - 7 sites running his systems
   - 7,500 hours of manual work removed a year

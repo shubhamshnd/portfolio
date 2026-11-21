@@ -7,7 +7,7 @@ const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' })
 
 const description =
-  'Shubham Shinde: port operations and digital transformation at JSW Infrastructure, India. Berth planning, port ERP for dry and liquid bulk, SAP and GST integration, live operations dashboards and AI across seven port sites. Berth utilization up from 65% to 68%. Open to port and terminal roles in the UAE, Saudi Arabia, Qatar, Oman, Singapore and Europe.'
+  'Shubham Shinde: port operations and digital transformation at JSW Infrastructure, India. Berth planning, port ERP for dry and liquid bulk, SAP and GST integration, live operations dashboards and AI across seven port sites, with 30+ processes automated. Open to port and terminal roles in the UAE, Saudi Arabia, Qatar, Oman, Singapore and Europe.'
 const title = 'Shubham Shinde · Port Operations & Digital Transformation · JSW Infrastructure'
 
 export const metadata = {
