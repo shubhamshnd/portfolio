@@ -513,7 +513,10 @@ function step(anim, t, dt) {
 export default function Terminal({ active, onSelect }) {
   const wrap = useRef(null)
   const labels = useRef({})
+  const arrows = useRef({})
   const api = useRef(null)
+  const activeRef = useRef(active)
+  activeRef.current = active
 
   useEffect(() => {
     const el = wrap.current
@@ -632,15 +635,54 @@ export default function Terminal({ active, onSelect }) {
       }
       controls.update()
       renderer.render(scene, camera)
-      // Hotspot labels follow their anchors on screen.
+      // Hotspots follow their anchors. One that's off screen (or behind the zone panel on desktop) is pinned
+      // to the nearest edge with an arrow pointing toward it, so every zone stays one click away.
       const { clientWidth: w, clientHeight: h } = el
+      const m = 36
+      const left = m
+      const right = w - m - (activeRef.current && w >= 768 ? 404 : 0)
+      const top = m
+      const bottom = h - m
+      const pinned = { left: [], right: [], top: [], bottom: [] }
+      const placed = []
       for (const [id, s] of Object.entries(SPOTS)) {
         const node = labels.current[id]
         if (!node) continue
         v.set(...s.at).project(camera)
-        const off = v.z > 1 || Math.abs(v.x) > 1.05 || Math.abs(v.y) > 1.05
-        node.style.opacity = off ? '0' : '1'
-        node.style.transform = `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px) translate(-50%, -50%)`
+        const behind = v.z > 1
+        let px = (((behind ? -v.x : v.x) + 1) / 2) * w
+        let py = ((1 - (behind ? -v.y : v.y)) / 2) * h
+        const edge = behind || px < left || px > right || py < top || py > bottom
+        if (edge) {
+          const cx = (left + right) / 2
+          const cy = (top + bottom) / 2
+          const dx = px - cx
+          const dy = py - cy || 1
+          const kx = dx ? Math.abs(((dx > 0 ? right : left) - cx) / dx) : Infinity
+          const ky = Math.abs(((dy > 0 ? bottom : top) - cy) / dy)
+          const k = Math.min(kx, ky)
+          px = cx + dx * k
+          py = cy + dy * k
+          const side = kx <= ky ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'bottom' : 'top'
+          arrows.current[id].style.transform = `translate(-50%, -50%) rotate(${Math.atan2(dy, dx)}rad) translateX(23px)`
+          pinned[side].push({ id, px, py })
+        } else placed.push({ id, px, py })
+        if (node.dataset.edge !== String(edge)) node.dataset.edge = String(edge)
+      }
+      // Pinned hotspots on the same edge are spread out so they never sit on top of each other.
+      const gap = 36
+      for (const [side, list] of Object.entries(pinned)) {
+        const axis = side === 'left' || side === 'right' ? 'py' : 'px'
+        const [lo, hi] = axis === 'py' ? [top, bottom] : [left, right]
+        list.sort((a, b) => a[axis] - b[axis])
+        for (let n = 1; n < list.length; n++) list[n][axis] = Math.max(list[n][axis], list[n - 1][axis] + gap)
+        const over = list.length ? list[list.length - 1][axis] - hi : 0
+        if (over > 0) list.forEach((p) => (p[axis] = Math.max(lo, p[axis] - over)))
+        placed.push(...list)
+      }
+      for (const { id, px, py } of placed) {
+        // The number circle (28px) sits on the anchor; the name runs off to its right.
+        labels.current[id].style.transform = `translate(${px}px, ${py}px) translate(-14px, -50%)`
       }
     }
     if (still) step(anim, 1, 0)
@@ -674,13 +716,23 @@ export default function Terminal({ active, onSelect }) {
             tabIndex={-1}
             ref={(n) => (labels.current[z.id] = n)}
             onClick={() => onSelect(active === z.id ? null : z.id)}
+            title={z.name}
+            data-edge="false"
             className="group pointer-events-auto absolute left-0 top-0 flex items-center gap-2 transition-opacity duration-300"
           >
-            <span className={`relative grid h-7 w-7 place-items-center rounded-full border font-mono text-xs ${active === z.id ? 'border-accent bg-accent text-bg' : 'border-accent/70 bg-bg/80 text-accent'}`}>
+            <span className={`relative grid h-7 w-7 place-items-center rounded-full border font-mono text-xs ${active === z.id ? 'border-accent bg-accent text-bg' : 'border-accent/70 bg-bg/80 text-accent group-hover:bg-accent group-hover:text-bg'}`}>
               {i + 1}
-              {active !== z.id && <span className="ping absolute inset-0 rounded-full border border-accent" />}
+              {active !== z.id && <span className="ping absolute inset-0 rounded-full border border-accent group-data-[edge=true]:hidden" />}
+              {/* Shown only when pinned to an edge: points toward the zone. */}
+              <svg
+                ref={(n) => (arrows.current[z.id] = n)}
+                viewBox="0 0 12 12"
+                className="absolute left-1/2 top-1/2 hidden h-3 w-3 fill-accent group-data-[edge=true]:block"
+              >
+                <path d="M2 1 11 6 2 11 4 6Z" />
+              </svg>
             </span>
-            <span className={`whitespace-nowrap rounded bg-bg/85 px-2 py-1 text-xs text-head max-sm:hidden ${active === z.id ? '' : 'opacity-0 group-hover:opacity-100'}`}>
+            <span className={`whitespace-nowrap rounded bg-bg/85 px-2 py-1 text-xs text-head max-sm:hidden group-data-[edge=true]:hidden ${active === z.id ? '' : 'opacity-0 group-hover:opacity-100'}`}>
               {z.name}
             </span>
           </button>
